@@ -424,8 +424,8 @@ Potřebuješ Go (verze podle [`go.mod`](go.mod)), bez CGO, Docker není nutný.
 
 ```sh
 go test ./...
-scripts/build.sh --arch arm64 --version 0.3.0      # Linux/macOS
-.\scripts\build.ps1 -Arch arm64 -Version 0.3.0     # Windows
+scripts/build.sh --arch arm64 --version 0.3.1      # Linux/macOS
+.\scripts\build.ps1 -Arch arm64 -Version 0.3.1     # Windows
 ```
 
 Oba skripty cross-kompilují `guardian` a `probe` a složí

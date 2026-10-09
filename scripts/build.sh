@@ -15,7 +15,7 @@
 #
 # Examples:
 #   scripts/build.sh
-#   scripts/build.sh --arch arm --version 0.3.0 --download-ca-cert
+#   scripts/build.sh --arch arm --version 0.3.1 --download-ca-cert
 #   scripts/build.sh --skip-image
 set -euo pipefail
 

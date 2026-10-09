@@ -22,9 +22,9 @@
 .EXAMPLE
   powershell -ExecutionPolicy Bypass -File scripts\build.ps1
 .EXAMPLE
-  .\scripts\build.ps1 -Version 0.3.0 -DownloadCaCert
+  .\scripts\build.ps1 -Version 0.3.1 -DownloadCaCert
 .EXAMPLE
-  .\scripts\build.ps1 -Arch arm -Version 0.3.0      # 32-bit ARM (armv7)
+  .\scripts\build.ps1 -Arch arm -Version 0.3.1      # 32-bit ARM (armv7)
 .EXAMPLE
   .\scripts\build.ps1 -SkipImage -WindowsProbe       # binaries + probe.exe only
 #>

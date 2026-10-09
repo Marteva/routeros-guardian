@@ -4,10 +4,10 @@
 #
 # Multi-arch image (what the release workflow pushes to GHCR):
 #   docker buildx build --platform linux/arm64,linux/arm/v7,linux/amd64 \
-#       --build-arg VERSION=0.3.0 -t ghcr.io/marteva/routeros-guardian:0.3.0 --push .
+#       --build-arg VERSION=0.3.1 -t ghcr.io/marteva/routeros-guardian:0.3.1 --push .
 #
 # Single-arch tarball that RouterOS can import with `/container add file=...`:
-#   docker buildx build --platform linux/arm64 --build-arg VERSION=0.3.0 \
+#   docker buildx build --platform linux/arm64 --build-arg VERSION=0.3.1 \
 #       -o type=docker,dest=routeros-guardian-arm64.tar -t routeros-guardian:latest .
 #
 # RouterOS imports `docker save` style tarballs with uncompressed layers;

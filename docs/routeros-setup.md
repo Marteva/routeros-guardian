@@ -400,7 +400,7 @@ re-created **[verified]**. Data in `/usb1/guardian/data` is kept.
 ```
 
 To pin a version with option A use a version tag instead of `latest`, e.g.
-`remote-image=marteva/routeros-guardian:0.3.0`.
+`remote-image=marteva/routeros-guardian:0.3.1`.
 
 ## 12. Hardening checklist
 

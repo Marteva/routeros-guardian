@@ -32,7 +32,7 @@ body:
     attributes:
       label: Guardian version
       description: Shown in the web UI footer/status, or the image tag / release you installed.
-      placeholder: e.g. 0.3.0
+      placeholder: e.g. 0.3.1
     validations:
       required: true
 
