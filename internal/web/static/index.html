@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+<title>Guardian for RouterOS</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
+<script src="i18n.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img src="favicon.svg" alt="" width="28" height="28">
+    <span class="brand-name">Guardian <span class="brand-sub">for RouterOS</span></span>
+  </div>
+  <div class="chips" id="status" aria-live="polite">
+    <span class="chip muted" data-i18n="app.loading">Loading…</span>
+  </div>
+  <div class="tools">
+    <label class="sr-only" for="lang-select" data-i18n="hdr.language">Language</label>
+    <select id="lang-select" class="lang"></select>
+    <button type="button" class="icon-btn" id="theme-btn">◐</button>
+    <button type="button" class="icon-btn" id="settings-btn" data-i18n-attr="title:hdr.settings;aria-label:hdr.settings">⚙</button>
+  </div>
+</header>
+
+<main>
+  <div class="banner hidden" id="error-banner" role="alert"></div>
+
+  <section class="card" aria-labelledby="alerts-h">
+    <div class="card-head">
+      <h2 id="alerts-h"><span data-i18n="alerts.title">Alerts</span> <span class="count" id="alerts-count"></span></h2>
+      <div class="seg" role="group" data-i18n-attr="aria-label:alerts.filter">
+        <button type="button" data-filter="open" class="active" data-i18n="alerts.open">Open</button>
+        <button type="button" data-filter="all" data-i18n="alerts.all">All</button>
+      </div>
+    </div>
+    <ul class="alerts" id="alerts"></ul>
+    <p class="empty hidden" id="alerts-empty"></p>
+  </section>
+
+  <section class="card" aria-labelledby="devices-h">
+    <div class="card-head">
+      <h2 id="devices-h"><span data-i18n="dev.title">Devices</span> <span class="count" id="devices-count"></span></h2>
+      <div class="sort-m" id="sort-m">
+        <label for="sort-select" data-i18n="dev.sortBy">Sort by</label>
+        <select id="sort-select">
+          <option value="name" data-i18n="dev.col.name">Name</option>
+          <option value="vendor" data-i18n="dev.col.vendor">Vendor</option>
+          <option value="ip">IP</option>
+          <option value="mac">MAC</option>
+          <option value="tx">↑ 24 h</option>
+          <option value="rx">↓ 24 h</option>
+          <option value="status" data-i18n="dev.col.status">Status</option>
+        </select>
+        <button type="button" class="btn small" id="sort-dir" data-i18n-attr="aria-label:dev.sortReverse">▲</button>
+      </div>
+      <div class="head-tools">
+        <button type="button" class="btn small toggle-btn hidden" id="expand-btn" aria-pressed="false">Expand all</button>
+        <button type="button" class="btn small toggle-btn" id="merge-btn" aria-pressed="false">Merge</button>
+        <input type="search" id="device-filter" data-i18n-attr="placeholder:dev.search;aria-label:dev.searchLabel">
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="devices">
+        <thead>
+          <tr>
+            <th data-sort="name" aria-sort="none"><button type="button" class="th-sort"><span data-i18n="dev.col.name">Name</span><span class="arrow" aria-hidden="true"></span></button></th>
+            <th data-sort="vendor" aria-sort="none" class="hide-s"><button type="button" class="th-sort"><span data-i18n="dev.col.vendor">Vendor</span><span class="arrow" aria-hidden="true"></span></button></th>
+            <th data-sort="ip" aria-sort="none"><button type="button" class="th-sort">IP<span class="arrow" aria-hidden="true"></span></button></th>
+            <th data-sort="mac" aria-sort="none" class="hide-m"><button type="button" class="th-sort">MAC<span class="arrow" aria-hidden="true"></span></button></th>
+            <th data-sort="tx" aria-sort="none" class="num"><button type="button" class="th-sort" data-i18n-attr="title:dev.col.tx.title">↑ 24 h<span class="arrow" aria-hidden="true"></span></button></th>
+            <th data-sort="rx" aria-sort="none" class="num"><button type="button" class="th-sort" data-i18n-attr="title:dev.col.rx.title">↓ 24 h<span class="arrow" aria-hidden="true"></span></button></th>
+            <th data-sort="status" aria-sort="none"><button type="button" class="th-sort" data-i18n-attr="title:dev.col.status.title"><span data-i18n="dev.col.status">Status</span><span class="arrow" aria-hidden="true"></span></button></th>
+            <th data-i18n="dev.col.quarantine">Quarantine</th>
+          </tr>
+        </thead>
+        <tbody id="devices"></tbody>
+      </table>
+    </div>
+    <p class="empty hidden" id="devices-empty" data-i18n="dev.empty">No devices yet.</p>
+    <div class="mergebar hidden" id="mergebar" role="region" aria-live="polite" data-i18n-attr="aria-label:merge.mode">
+      <span id="merge-info"></span>
+      <div class="actions">
+        <button type="button" class="btn" id="merge-cancel">Cancel</button>
+        <button type="button" class="btn primary" id="merge-do" disabled>Merge</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot" id="foot"></footer>
+</main>
+
+<dialog id="detail" class="sheet" aria-labelledby="detail-title">
+  <div class="sheet-head">
+    <h2 id="detail-title" data-i18n="detail.title">Device</h2>
+    <button type="button" class="icon-btn" data-close data-i18n-attr="aria-label:common.close;title:common.close">✕</button>
+  </div>
+  <div id="detail-body" class="sheet-body"></div>
+</dialog>
+
+<dialog id="settings" class="sheet" aria-labelledby="settings-title">
+  <div class="sheet-head">
+    <h2 id="settings-title" data-i18n="set.title">Settings</h2>
+    <button type="button" class="icon-btn" data-close data-i18n-attr="aria-label:common.close;title:common.close">✕</button>
+  </div>
+  <div id="settings-body" class="sheet-body"></div>
+</dialog>
+
+<dialog id="confirm" class="confirm" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+  <form method="dialog">
+    <h3 id="confirm-title"></h3>
+    <p id="confirm-text"></p>
+    <div class="confirm-word hidden" id="confirm-word-wrap">
+      <label for="confirm-word" id="confirm-word-label"></label>
+      <input type="text" id="confirm-word" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    </div>
+    <div class="actions">
+      <button type="button" class="btn" id="confirm-cancel" data-i18n="common.back">Back</button>
+      <button value="ok" class="btn danger" id="confirm-ok" data-i18n="common.confirm">Confirm</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast hidden" id="toast" role="status"></div>
+</body>
+</html>

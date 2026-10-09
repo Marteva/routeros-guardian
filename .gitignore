@@ -1,0 +1,32 @@
+# Build output
+dist/
+probe-out/
+*.tar
+*.tar.gz
+*.exe
+
+# Runtime data (SQLite database, WAL/SHM files, backups)
+*.db
+*.db-*
+*.db.*
+
+# GeoIP databases (DB-IP Lite, downloaded by scripts/update-geoip.*)
+*.mmdb
+*.mmdb.gz
+
+# CA bundle downloaded by the build scripts (https://curl.se/ca/cacert.pem)
+tools/mkimage/cacert.pem
+
+# Personal router configuration and secrets - never commit
+deploy/local/
+*.local.rsc
+.env
+.env.*
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+*.stackdump
+.DS_Store
+Thumbs.db

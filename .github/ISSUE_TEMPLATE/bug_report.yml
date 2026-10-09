@@ -1,0 +1,97 @@
+name: Bug report
+description: Something does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem.
+        **Security issues:** please do not open a public issue - see [SECURITY.md](https://github.com/Marteva/routeros-guardian/blob/main/SECURITY.md).
+        **Before posting logs or screenshots, remove passwords, tokens, public IP addresses, MAC addresses and device names you do not want to share.**
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: false
+
+  - type: input
+    id: guardian-version
+    attributes:
+      label: Guardian version
+      description: Shown in the web UI footer/status, or the image tag / release you installed.
+      placeholder: e.g. 0.3.0
+    validations:
+      required: true
+
+  - type: input
+    id: routeros-version
+    attributes:
+      label: RouterOS version
+      description: Output of `/system resource print` (version line).
+      placeholder: e.g. 7.24.4 (stable)
+    validations:
+      required: true
+
+  - type: input
+    id: router-model
+    attributes:
+      label: Router model and architecture
+      placeholder: e.g. hAP ax³ (arm64)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installation method
+      options:
+        - Image pulled from GHCR (remote-image)
+        - Release tarball (file=)
+        - Self-built tarball (scripts/build.ps1 / build.sh)
+        - Docker image built from the Dockerfile
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: network-mode
+    attributes:
+      label: Container network
+      options:
+        - veth in the LAN bridge
+        - Separate container bridge with NAT
+        - Other
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: |
+        Container log (`/log print where topics~"container"`), browser console, or `/api/status` output.
+        Remember to redact secrets and personal data.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: FastTrack / hw-offload enabled? Number of devices? GeoIP databases present?
+    validations:
+      required: false

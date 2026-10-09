@@ -1,0 +1,23 @@
+# keep the build context small
+.git
+.github
+.gitignore
+.vscode
+.idea
+dist/
+probe-out/
+*.tar
+*.tar.gz
+*.mmdb
+*.mmdb.gz
+*.db
+*.db-*
+*.csv
+*.exe
+tools/mkimage/cacert.pem
+deploy/
+docs/
+scripts/
+*.md
+Dockerfile
+.dockerignore
