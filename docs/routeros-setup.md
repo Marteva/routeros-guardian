@@ -388,16 +388,28 @@ IP Geolocation by [DB-IP](https://db-ip.com), licensed under
 
 ## 11. Updating
 
-A restart does **not** pick up a new image - the container has to be
-re-created **[verified]**. Data in `/usb1/guardian/data` is kept.
+A plain restart does **not** pick up a new image **[verified]**. Use **repull**
+instead - data in `/usb1/guardian/data` is kept either way.
+
+**Container created from a tarball (option B)** **[verified on 7.24.4]**: upload
+the new `routeros-guardian-<arch>.tar` over the old file (same name, same path
+as in `file=`), then repull. RouterOS re-extracts the uploaded file and
+restarts the container:
 
 ```routeros
-/container stop [find where name=guardian]
-/container remove [find where name=guardian]
-# option B: upload the new tarball first; then run the /container add command
-# from section 9 again (option A pulls the current :latest image)
-/container start [find where name=guardian]
+/container repull [find where name=guardian]
 ```
+
+(In Winbox: *Container* → select `guardian` → **Repull**.) If the old tarball is
+still on the disk, repull simply re-extracts the old version - check the
+version in the UI footer afterwards.
+
+**Container created from GHCR (option A)**: repull downloads the current
+`:latest` image - no file upload needed.
+
+Re-creating the container (`/container remove` + the `/container add` command
+from section 9) also works and is needed when you switch between option A
+and option B.
 
 To pin a version with option A use a version tag instead of `latest`, e.g.
 `remote-image=marteva/routeros-guardian:0.3.1`.

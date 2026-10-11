@@ -372,12 +372,21 @@ nemá právo `rest-api`. Zkontroluj `/user print detail` a
 znamená, že služba `www`/`www-ssl` je vypnutá, běží na jiném portu než
 v `GUARDIAN_ROS_URL`, nebo její `address=` kontejner nepovoluje.
 
+**Jak aktualizovat na novou verzi?**
+Nahraj nový `routeros-guardian-<arch>.tar` z
+[posledního release](https://github.com/Marteva/routeros-guardian/releases/latest)
+přes starý soubor a spusť `/container repull [find where name=guardian]`
+(Winbox: *Container* → **Repull**). S `remote-image` z GHCR stačí jen repull.
+Obyčejný restart ponechá starou verzi. Data i nastavení zůstanou zachovány.
+Podrobnosti v [docs/routeros-setup.md](docs/routeros-setup.md#11-updating).
+
 **Co dělá healthcheck?**
 `/healthz` vrací `200 ok`, dokud se čtení routeru daří, a `503` s krátkým
 důvodem, když je poslední úspěšné čtení příliš staré. Image spouští
-`/guardian -healthcheck` jako svůj `HEALTHCHECK`; zda RouterOS healthchecky
-z image vyhodnocuje, není ověřeno – `http://<ip-kontejneru>:8080/healthz`
-můžeš hlídat sám (např. přes `/tool netwatch`).
+`/guardian -healthcheck` jako svůj `HEALTHCHECK`. RouterOS ho vyhodnocuje
+(ověřeno na 7.24.4): v logu kontejneru se objeví `*** healthy` a `/container
+print` ukazuje příznak `H`. `http://<ip-kontejneru>:8080/healthz` můžeš hlídat
+i sám (např. přes `/tool netwatch`).
 
 **Kontejner hned po startu skončí.**
 Viz `/log print where topics~"container"`. `GUARDIAN_ROS_PASS is required`

@@ -369,11 +369,20 @@ the group lacks the `rest-api` policy. Check `/user print detail` and
 means the `www`/`www-ssl` service is disabled, uses another port than
 `GUARDIAN_ROS_URL`, or its `address=` list excludes the container.
 
+**How do I update to a new version?**
+Upload the new `routeros-guardian-<arch>.tar` from the
+[latest release](https://github.com/Marteva/routeros-guardian/releases/latest)
+over the old file and run `/container repull [find where name=guardian]`
+(Winbox: *Container* → **Repull**). With `remote-image` from GHCR, repull alone
+is enough. A plain restart keeps the old version. Data and settings are kept.
+See [docs/routeros-setup.md](docs/routeros-setup.md#11-updating).
+
 **What does the healthcheck do?**
 `/healthz` returns `200 ok` while polling the router succeeds and `503` with a
 short reason when the last successful poll is too old. The image runs
-`/guardian -healthcheck` as its `HEALTHCHECK`; whether RouterOS acts on image
-healthchecks is not verified - you can monitor `http://<container-ip>:8080/healthz`
+`/guardian -healthcheck` as its `HEALTHCHECK`. RouterOS evaluates it (verified
+on 7.24.4): the container log shows `*** healthy` and `/container print` shows
+the `H` flag. You can also monitor `http://<container-ip>:8080/healthz`
 yourself (e.g. with `/tool netwatch`).
 
 **The container stops right after start.**
