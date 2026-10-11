@@ -3,10 +3,12 @@ package settings
 import (
 	"context"
 	"errors"
+	"slices"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/Marteva/routeros-guardian/internal/config"
 	"github.com/Marteva/routeros-guardian/internal/model"
 )
 
@@ -95,6 +97,7 @@ func TestValidateRejectsAndKeepsState(t *testing.T) {
 		"ntfy without topic":    func(s *Settings) { s.NtfyURL = "https://ntfy.sh/" },
 		"learn too short":       func(s *Settings) { s.LearnPeriod = time.Minute },
 		"bad language":          func(s *Settings) { s.Language = "xx" },
+		"removed language":      func(s *Settings) { s.Language = "ru" },
 		"bad sensitivity":       func(s *Settings) { s.Sensitivity = "paranoid" },
 		"unknown detector":      func(s *Settings) { s.DisabledDetectors = []string{"nope"} },
 		"retention too short":   func(s *Settings) { s.Retention = 24 * time.Hour },
@@ -119,6 +122,68 @@ func TestSaveFailureKeepsState(t *testing.T) {
 	}
 	if m.Get().Language != "en" {
 		t.Fatal("state changed despite failed save")
+	}
+}
+
+func TestLanguages(t *testing.T) {
+	if !slices.Equal(Languages, []string{"en", "cs", "de", "es", "id", "it", "pl", "pt", "tr", "uk"}) {
+		t.Fatalf("Languages = %v", Languages)
+	}
+	for in, want := range map[string]string{
+		"en": "en", "cs": "cs", " DE ": "de", "pt": "pt", "uk": "uk", "id": "id", "it": "it", "tr": "tr",
+		"ru": "", "xx": "", "": "", "cs-CZ": "", "pt-BR": "", "ua": "",
+	} {
+		if got := NormalizeLanguage(in); got != want {
+			t.Errorf("NormalizeLanguage(%q) = %q, want %q", in, got, want)
+		}
+	}
+	if err := (Settings{Language: "ru"}).Validate(); err == nil || !strings.Contains(err.Error(), "language") {
+		t.Errorf("ru must be rejected: %v", err)
+	}
+}
+
+// A language that was removed (Russian) or is unknown must not make the stored
+// settings invalid – NewManager would then drop all of them (Telegram etc.).
+func TestStoredUnsupportedLanguageKeepsOtherSettings(t *testing.T) {
+	for _, stored := range []string{"ru", "xx"} {
+		st := &kvStore{kv: map[string]string{
+			kTelegramToken: "123:abc", kTelegramChat: "-42", kNtfyURL: "https://ntfy.sh/topic",
+			kLanguage: stored, kSensitivity: "high", kLearnPeriod: "72h",
+		}}
+		def := defaults()
+		def.Language = "de"
+		m, err := NewManager(context.Background(), st, def)
+		if err != nil {
+			t.Fatal(err)
+		}
+		s := m.Get()
+		if s.Language != "" {
+			t.Errorf("%s: Language = %q, want \"\" (English)", stored, s.Language)
+		}
+		if s.TelegramToken != "123:abc" || s.TelegramChatID != "-42" || s.NtfyURL != "https://ntfy.sh/topic" ||
+			s.Sensitivity != "high" || s.LearnPeriod != 72*time.Hour {
+			t.Errorf("%s: stored settings lost: %+v", stored, s)
+		}
+		// The next save writes the normalized language (the key is deleted).
+		if _, err := m.Update(context.Background(), func(s *Settings) error { s.Sensitivity = "low"; return nil }); err != nil {
+			t.Fatalf("%s: update: %v", stored, err)
+		}
+		if v, ok := st.kv[kLanguage]; ok {
+			t.Errorf("%s: language still stored as %q", stored, v)
+		}
+	}
+}
+
+func TestDefaultsNormalizeLanguage(t *testing.T) {
+	for env, want := range map[string]string{"": "", "cs": "cs", "PL": "pl", "ru": "", "klingon": ""} {
+		s := Defaults(config.Config{Language: env, LearnPeriod: 7 * 24 * time.Hour,
+			DedupWindow: 6 * time.Hour, Retention: 60 * 24 * time.Hour})
+		if s.Language != want {
+			t.Errorf("GUARDIAN_LANGUAGE=%q: Language = %q, want %q", env, s.Language, want)
+		}
+		if err := s.Validate(); err != nil {
+			t.Errorf("GUARDIAN_LANGUAGE=%q: defaults invalid: %v", env, err)
+		}
 	}
 }
 

@@ -138,8 +138,8 @@ func TestFormat(t *testing.T) {
 	if got := loc("en").perHour(3174 * mB); got != "3.1 GB/h" {
 		t.Errorf("en perHour = %q", got)
 	}
-	if got := loc("ru").perHour(45 * mB); got != "45 МБ/ч" {
-		t.Errorf("ru perHour = %q", got)
+	if got := loc("pl").perHour(4.5 * mB); got != "4,5 MB/h" {
+		t.Errorf("pl perHour = %q", got)
 	}
 }
 
@@ -185,8 +185,10 @@ func TestPluralForm(t *testing.T) {
 	}{
 		{"cs", 1, "one"}, {"cs", 3, "few"}, {"cs", 5, "many"}, {"cs", 22, "many"}, {"cs", 0, "many"},
 		{"pl", 1, "one"}, {"pl", 22, "few"}, {"pl", 12, "many"}, {"pl", 21, "many"},
-		{"ru", 1, "one"}, {"ru", 21, "one"}, {"ru", 11, "many"}, {"ru", 23, "few"}, {"ru", 13, "many"},
+		{"pl", 2, "few"}, {"pl", 5, "many"}, {"pl", 104, "few"}, {"pl", 114, "many"},
 		{"en", 1, "one"}, {"en", 2, "many"}, {"en", 0, "many"}, {"de", 3, "many"},
+		{"uk", 1, "one"}, {"uk", 21, "one"}, {"uk", 11, "many"}, {"uk", 23, "few"}, {"uk", 13, "many"}, {"uk", 0, "many"}, {"uk", 5, "many"},
+		{"es", 3, "many"}, {"pt", 1, "one"}, {"pt", 21, "many"}, {"id", 1, "one"}, {"tr", 3, "many"}, {"it", 2, "many"},
 	}
 	for _, tc := range tests {
 		if got := pluralForm(tc.lang, tc.n); got != tc.want {

@@ -86,7 +86,7 @@
 # Time zone for logs and UI, e.g. Europe/Berlin, America/New_York.
 :global grdTZ "UTC"
 
-# Default language of alerts/notifications: en, cs, de, pl, ru, es, pt.
+# Default language of alerts/notifications: en, cs, de, es, id, it, pl, pt, tr, uk.
 :global grdLanguage "en"
 
 # Optional notifications. Leave empty and configure them later in the web UI

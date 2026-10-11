@@ -19,7 +19,19 @@ import (
 )
 
 // Languages supported by the UI and by alert/notification texts.
-var Languages = []string{"en", "cs", "de", "pl", "ru", "es", "pt"}
+var Languages = []string{"en", "cs", "de", "es", "id", "it", "pl", "pt", "tr", "uk"}
+
+// NormalizeLanguage returns l (trimmed, lower-case) when it is one of
+// Languages, else "" (= English). Used for values that were valid once – a
+// language stored in the database or set in GUARDIAN_LANGUAGE may have been
+// removed since – so that they cannot invalidate the other settings.
+func NormalizeLanguage(l string) string {
+	l = strings.ToLower(strings.TrimSpace(l))
+	if slices.Contains(Languages, l) {
+		return l
+	}
+	return ""
+}
 
 // Sensitivities of the detection engine.
 var Sensitivities = []string{"low", "normal", "high"}
@@ -63,7 +75,7 @@ func Defaults(c config.Config) Settings {
 		NtfyURL:        c.NtfyURL,
 		NtfyToken:      c.NtfyToken,
 		NotifyMin:      model.SevWarning,
-		Language:       c.Language,
+		Language:       NormalizeLanguage(c.Language), // unsupported → English
 		LearnPeriod:    c.LearnPeriod,
 		Sensitivity:    "normal",
 		DedupWindow:    c.DedupWindow,
@@ -150,7 +162,9 @@ func encode(s Settings) map[string]string {
 }
 
 // apply overlays stored values on s. Unparsable values are ignored (the
-// default stays) so a bad row can never prevent startup.
+// default stays) so a bad row can never prevent startup. A stored language
+// that is no longer supported becomes "" (English) instead of failing
+// validation, which would drop all stored settings in NewManager.
 func apply(s *Settings, kv map[string]string) {
 	str := func(k string, dst *string) {
 		if v, ok := kv[k]; ok {
@@ -168,7 +182,9 @@ func apply(s *Settings, kv map[string]string) {
 	str(kTelegramChat, &s.TelegramChatID)
 	str(kNtfyURL, &s.NtfyURL)
 	str(kNtfyToken, &s.NtfyToken)
-	str(kLanguage, &s.Language)
+	if v, ok := kv[kLanguage]; ok {
+		s.Language = NormalizeLanguage(v)
+	}
 	str(kSensitivity, &s.Sensitivity)
 	if v, ok := kv[kNotifyMin]; ok {
 		if sev, ok := ParseSeverity(v); ok {

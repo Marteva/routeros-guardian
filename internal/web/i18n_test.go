@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"maps"
 	"regexp"
 	"slices"
 	"sort"
@@ -186,6 +187,74 @@ func TestUIListsMatchModel(t *testing.T) {
 	}
 	if got := list("SENSITIVITIES"); !slices.Equal(got, settings.Sensitivities) {
 		t.Errorf("app.js SENSITIVITIES %v, settings.Sensitivities %v", got, settings.Sensitivities)
+	}
+}
+
+// The UI catalog, the native language names and the flags cover exactly the
+// server's languages (a removed language such as "ru" leaves nothing behind).
+func TestUILanguagesMatchSettings(t *testing.T) {
+	want := slices.Sorted(slices.Values(settings.Languages))
+	if got := slices.Sorted(maps.Keys(loadCatalog(t))); !slices.Equal(got, want) {
+		t.Errorf("i18n.js languages %v, settings.Languages %v", got, want)
+	}
+	app := readStatic(t, "app.js")
+	block := func(name string) string {
+		i := strings.Index(app, "const "+name+" = {")
+		if i < 0 {
+			t.Fatalf("app.js: %s not found", name)
+		}
+		end := strings.Index(app[i:], "\n  };")
+		if end < 0 {
+			t.Fatalf("app.js: end of %s not found", name)
+		}
+		return app[i : i+end]
+	}
+	keys := func(name string, re *regexp.Regexp) []string {
+		var out []string
+		for _, m := range re.FindAllStringSubmatch(block(name), -1) {
+			out = append(out, m[1])
+		}
+		slices.Sort(out)
+		return out
+	}
+	names := keys("LANG_NAMES", regexp.MustCompile(`\b([a-z]{2}): "`))
+	if !slices.Equal(names, want) {
+		t.Errorf("app.js LANG_NAMES %v, settings.Languages %v", names, want)
+	}
+	flags := keys("FLAGS", regexp.MustCompile(`(?m)^    ([a-z]{2}): \["`))
+	if !slices.Equal(flags, want) {
+		t.Errorf("app.js FLAGS %v, settings.Languages %v", flags, want)
+	}
+	// every flag is a viewBox plus shapes with literal colours (no external images)
+	for _, m := range regexp.MustCompile(`(?m)^    ([a-z]{2}): \["([^"]+)"`).FindAllStringSubmatch(block("FLAGS"), -1) {
+		if len(strings.Fields(m[2])) != 4 {
+			t.Errorf("flag %s: bad viewBox %q", m[1], m[2])
+		}
+	}
+	if regexp.MustCompile(`[\x{1F1E6}-\x{1F1FF}]`).MatchString(app) {
+		t.Error("app.js contains emoji flags (not rendered on Windows)")
+	}
+}
+
+// The header language picker is an accessible flag button + listbox.
+func TestLanguagePickerMarkup(t *testing.T) {
+	html := readStatic(t, "index.html")
+	for _, want := range []string{
+		`id="lang-btn"`, `aria-haspopup="listbox"`, `aria-expanded="false"`, `aria-controls="lang-menu"`,
+		`id="lang-menu" role="listbox" hidden`, `data-i18n-attr="aria-label:hdr.language"`,
+	} {
+		if !strings.Contains(html, want) {
+			t.Errorf("index.html: missing %s", want)
+		}
+	}
+	if strings.Contains(html, "lang-select") {
+		t.Error("index.html still has the old language <select>")
+	}
+	app := readStatic(t, "app.js")
+	for _, want := range []string{`role: "option"`, `"aria-selected"`, `"aria-expanded"`, `"Escape"`, `"ArrowDown"`, `"ArrowUp"`, `"Home"`, `"End"`, `"Enter"`, "pointerdown", "focusout"} {
+		if !strings.Contains(app, want) {
+			t.Errorf("app.js language picker: %s not handled", want)
+		}
 	}
 }
 

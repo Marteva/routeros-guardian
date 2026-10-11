@@ -90,7 +90,7 @@ These are also editable in the UI; see [precedence](#precedence).
 | `GUARDIAN_LEARN_PERIOD` | `7d` | Learning period | Length of the learning phase (UI range 1 hour - 60 days). |
 | `GUARDIAN_RETENTION` | `60d` | Retention | How long aggregated statistics are kept (UI range 14 - 365 days). |
 | `GUARDIAN_DEDUP_WINDOW` | `6h` | Deduplication window | The same alert is sent only once within this window (UI range 1 minute - 7 days). |
-| `GUARDIAN_LANGUAGE` | – (English) | Language | Language of Telegram/ntfy notifications: `en`, `cs`, `de`, `pl`, `ru`, `es`, `pt`. The web UI shows alerts in its own language, switched in the page header. |
+| `GUARDIAN_LANGUAGE` | – (English) | Language | Language of Telegram/ntfy notifications: `en`, `cs`, `de`, `es`, `id`, `it`, `pl`, `pt` (Brazilian Portuguese), `tr`, `uk`; empty or unsupported = English. The web UI shows alerts in its own language, switched with the flag button in the page header. |
 | `GUARDIAN_TELEGRAM_TOKEN` | - | Telegram bot token | Bot token from @BotFather. |
 | `GUARDIAN_TELEGRAM_CHAT` | - | Telegram chat ID | Chat (or group) ID the bot writes to. Token and chat ID must be set together. |
 | `GUARDIAN_NTFY_URL` | - | ntfy topic URL | Full topic URL, e.g. `https://ntfy.sh/your-long-random-topic`. |

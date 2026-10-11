@@ -1,6 +1,8 @@
 package i18n
 
-// Alert texts of internal/detect (Portuguese, Brazilian usage).
+// Alert texts of internal/detect (Portuguese, Brazilian usage). The device
+// name (%s) can be any noun or free text, so no adjective or participle has
+// to agree with it in gender.
 var alertsPT = map[string]string{
 	"fmt.decimal":  ",",
 	"fmt.datetime": "02/01/2006 15:04",
@@ -11,16 +13,16 @@ var alertsPT = map[string]string{
 	"unit.TB":      "TB",
 
 	"unit.per_hour":       "%s/h",
-	"unit.per_whole_hour": "%s na hora inteira",
+	"unit.per_whole_hour": "%s em uma hora inteira",
 	"unit.addr_per_hour":  "%s endereços/h",
 
-	"kind.phone":    "Telefone",
+	"kind.phone":    "Celular",
 	"kind.tablet":   "Tablet",
 	"kind.computer": "Computador",
 	"kind.tv":       "TV",
 	"kind.camera":   "Câmera",
 	"kind.iot":      "Dispositivo inteligente",
-	"kind.speaker":  "Alto-falante",
+	"kind.speaker":  "Caixa de som",
 	"kind.console":  "Console de jogos",
 	"kind.printer":  "Impressora",
 	"kind.nas":      "NAS",
@@ -51,46 +53,46 @@ var alertsPT = map[string]string{
 
 	"alert.newdev.title":          "Novo dispositivo na rede: %s",
 	"alert.newdev.first":          "%s apareceu na rede pela primeira vez.",
-	"alert.newdev.hostname":       "nome %s",
+	"alert.newdev.hostname":       "nome do host %s",
 	"alert.newdev.comment":        "comentário %s",
 	"alert.newdev.vendor":         "fabricante %s",
 	"alert.newdev.kind":           "tipo (estimado) %s",
 	"alert.newdev.randomized":     "O dispositivo usa um endereço MAC aleatório (típico de celulares e notebooks).",
-	"alert.newdev.advice_warning": "Não foi possível identificar o dispositivo e ele tem um endereço MAC fixo. Se você não o reconhece, considere bloqueá-lo.",
-	"alert.newdev.advice_info":    "Se você não reconhece o dispositivo, pode colocá-lo em quarentena.",
+	"alert.newdev.advice_warning": "Não foi possível identificar o dispositivo, e ele tem um endereço MAC fixo. Se você não o reconhecer, considere bloqueá-lo.",
+	"alert.newdev.advice_info":    "Se você não reconhecer o dispositivo, pode colocá-lo em quarentena.",
 
 	"alert.inventory.title":    "Inventário inicial concluído: %d %s",
-	"alert.inventory.found":    "Nas primeiras %d %s, o Guardian encontrou %d %s na rede (%s).",
-	"alert.inventory.review":   "Revise a lista de dispositivos e identifique ou bloqueie os desconhecidos.",
+	"alert.inventory.found":    "No período inicial de %d %s, o Guardian encontrou %d %s na rede (%s).",
+	"alert.inventory.review":   "Revise a lista de dispositivos: dê um nome aos desconhecidos ou bloqueie-os.",
 	"alert.inventory.learning": "O aprendizado do comportamento normal continua até %s; até lá, anomalias de comportamento não são notificadas.",
-	"alert.inventory.learned":  "O aprendizado do comportamento normal foi concluído; anomalias de comportamento agora são notificadas.",
+	"alert.inventory.learned":  "O aprendizado do comportamento normal foi concluído; agora as anomalias de comportamento são notificadas.",
 
 	"alert.dest.examples":       ", por exemplo, %s",
 	"alert.dest.line":           "%s: enviados %s, recebidos %s, %d %s%s.",
 	"alert.country.title.one":   "%s está se comunicando com um novo país: %s",
 	"alert.country.title.many":  "%s está se comunicando com novos países: %s",
-	"alert.country.first":       "Primeira comunicação com o país %s",
+	"alert.country.first":       "Primeiro contato com o país %s",
 	"alert.country.known":       "Até agora, o dispositivo se comunicou com %d %s (%s).",
-	"alert.country.advice_crit": "%s: esse tipo de dispositivo normalmente não envia dados para novos países (enviado ≥ %s). Se você não alterou nada, considere colocar o dispositivo em quarentena.",
-	"alert.country.advice_warn": "Pode ser uma atualização ou um novo serviço; se você não esperava isso, verifique o dispositivo.",
+	"alert.country.advice_crit": "%s: esse tipo de dispositivo normalmente não envia dados para novos países (volume enviado ≥ %s). Se você não mudou nada, considere colocar o dispositivo em quarentena.",
+	"alert.country.advice_warn": "Pode ser uma atualização ou um novo serviço; se você não esperava por isso, verifique o dispositivo.",
 	"alert.asn.title.one":       "%s está se comunicando com uma nova rede: %s",
 	"alert.asn.title.many":      "%s está se comunicando com %d novas redes",
-	"alert.asn.first":           "Primeira comunicação com a rede %s",
-	"alert.asn.known":           "%s: esse tipo de dispositivo costuma ter um conjunto pequeno e estável de destinos (até agora %d %s).",
+	"alert.asn.first":           "Primeiro contato com a rede %s",
+	"alert.asn.known":           "%s: esse tipo de dispositivo costuma ter um conjunto pequeno e estável de destinos (até agora, %d %s).",
 
 	"alert.spike.title":       "%s está enviando %s",
-	"alert.spike.detail":      "Na hora %s, o dispositivo enviou %s para a internet, normalmente %s, ou seja, %s mais.",
+	"alert.spike.detail":      "No intervalo %s, o dispositivo enviou %s para a internet; o normal é %s, ou seja, %s mais.",
 	"alert.spike.max":         "Máximo dos últimos %d %s: %s.",
-	"alert.spike.advice_crit": "%s: esse tipo de dispositivo normalmente não envia tantos dados; pode estar enviando gravações a terceiros ou ter sido comprometido. Se você não esperava isso, considere a quarentena.",
-	"alert.spike.advice_warn": "Pode ser um backup ou o compartilhamento de arquivos grandes; se você não esperava isso, verifique o dispositivo.",
+	"alert.spike.advice_crit": "%s: esse tipo de dispositivo normalmente não envia tantos dados – gravações podem estar sendo enviadas a terceiros, ou o dispositivo pode ter sido comprometido. Se você não esperava por isso, considere colocá-lo em quarentena.",
+	"alert.spike.advice_warn": "Pode ser um backup ou o compartilhamento de arquivos grandes; se você não esperava por isso, verifique o dispositivo.",
 	"alert.spike.fast.title":  "%s está enviando uma quantidade incomum de dados agora (%s)",
-	"alert.spike.fast.detail": "Nos últimos %d min, o dispositivo enviou %s para a internet, quando normalmente envia %s, ou seja, já %s mais.",
+	"alert.spike.fast.detail": "Nos últimos %d min, o dispositivo enviou %s para a internet, enquanto o normal é %s, ou seja, já %s mais.",
 
 	"alert.fanout.title":       "%s contatou %d endereços diferentes em uma hora",
-	"alert.fanout.detail":      "Na hora %s, o dispositivo contatou %d endereços IP diferentes na internet (%d novas conexões), normalmente %s, ou seja, %s mais.",
+	"alert.fanout.detail":      "No intervalo %s, o dispositivo contatou %d endereços IP diferentes na internet (%d novas conexões); o normal é %s, ou seja, %s mais.",
 	"alert.fanout.max":         "Máximo anterior: %s.",
-	"alert.fanout.explain":     "Esse comportamento é típico de varredura da internet ou de participação em uma botnet.",
-	"alert.fanout.advice_crit": "Considere colocar o dispositivo em quarentena e atualizar seu firmware.",
+	"alert.fanout.explain":     "Esse comportamento é típico de varredura na internet ou de um dispositivo que faz parte de uma botnet.",
+	"alert.fanout.advice_crit": "Considere colocar o dispositivo em quarentena e atualizar o firmware dele.",
 }
 
 func init() { Register("pt", alertsPT) }

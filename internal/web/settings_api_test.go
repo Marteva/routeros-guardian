@@ -175,6 +175,7 @@ func TestSettingsPutValidation(t *testing.T) {
 		{"sensitivity", `{"sensitivity": "paranoid"}`, "sensitivity"},
 		{"severity", `{"notifyMin": "loud"}`, "severity"},
 		{"language", `{"language": "xx"}`, "language"},
+		{"removed language", `{"language": "ru"}`, "language"},
 		{"detector", `{"disabledDetectors": ["coffee"]}`, "coffee"},
 		{"ntfy url", `{"ntfyUrl": "ftp://example.com/topic"}`, "ntfy"},
 		{"telegram pair", `{"telegramToken": "1:abc"}`, "chat ID"},

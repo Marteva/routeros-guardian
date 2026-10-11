@@ -606,7 +606,7 @@ func TestSettingsResetConcurrent(t *testing.T) {
 				case 2:
 					e.Tick(ctx, at)
 				case 3:
-					s := testSettings([]string{"en", "cs", "ru"}[i%3])
+					s := testSettings([]string{"en", "cs", "pl"}[i%3])
 					s.Sensitivity = settings.Sensitivities[i%3]
 					e.SetSettings(s)
 				case 4:

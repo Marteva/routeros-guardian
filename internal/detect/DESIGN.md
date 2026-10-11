@@ -189,12 +189,15 @@ which `model.Store` does not expose; a `jaccard` helper is ready.
 ## Texts and languages
 
 All titles and details come from `internal/i18n` (`alerts_<lang>.go`, keys
-`alert.*`, `kind.*`, `word.*`, `unit.*`, `fmt.*`; languages en, cs, de, pl,
-ru, es, pt; fallback en). Numbers use the language's decimal separator
-("3.1 GB/h" en, "3,1 GB/h" others), dates the language's layout, counted
-nouns the plural rules of cs/pl/ru (`word.<noun>.one|few|many`).
-Russian/Polish titles avoid past-tense verbs whose gender would have to agree
-with the device name. Evidence keys stay language independent (`kind_camera`,
+`alert.*`, `kind.*`, `word.*`, `unit.*`, `fmt.*`; languages `settings.Languages`:
+en, cs, de, es, id, it, pl, pt (Brazilian), tr, uk; fallback en). Numbers use
+the language's decimal separator ("3.1 GB/h" en, "3,1 GB/h" others), dates
+the language's layout, counted nouns the plural rules of cs/pl/uk
+(`word.<noun>.one|few|many`, see `pluralForm`; id and tr do not inflect nouns
+after numerals, so their three forms are equal). Titles avoid past-tense verbs
+and adjectives whose gender would have to agree with the device name (Czech,
+Polish, Ukrainian, Italian, Portuguese), and Turkish texts never attach a
+suffix to an inserted value (vowel harmony depends on the name). Evidence keys stay language independent (`kind_camera`,
 not a translated label).
 
 **Rendered from Evidence** (`render.go`). `RenderAlert(a, device, lang)`

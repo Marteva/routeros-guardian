@@ -69,8 +69,9 @@ který už máš.
   a ukončí jeho existující spojení.
 - **Webové UI** – zařízení (seskupení, řazení, poznámky, ruční změna typu,
   ruční sloučení zařízení s rotující MAC), alerty, nastavení, světlý/tmavý
-  motiv; 7 jazyků (angličtina, čeština, němčina, polština, ruština,
-  španělština, portugalština).
+  motiv; 10 jazyků (angličtina, čeština, němčina, španělština, indonéština,
+  italština, polština, brazilská portugalština, turečtina, ukrajinština)
+  s přepínačem jazyka s vlajkami.
 - **Nastavení v UI** – notifikace, jazyk, délka učení, citlivost, detektory,
   retence – bez restartu kontejneru.
 - **GeoIP** – země a ASN z bezplatných databází DB-IP Lite.
@@ -267,7 +268,7 @@ Guardian při startu čte proměnné prostředí (nastavují se přes
 | `GUARDIAN_LEARN_PERIOD` * | `7d` | délka učení |
 | `GUARDIAN_RETENTION` * | `60d` | jak dlouho se drží statistiky |
 | `GUARDIAN_DEDUP_WINDOW` * | `6h` | stejný alert se v tomto okně pošle jen jednou |
-| `GUARDIAN_LANGUAGE` * | – (angličtina) | jazyk notifikací: en, cs, de, pl, ru, es, pt (prázdné = angličtina; UI včetně alertů má vlastní přepínač jazyka) |
+| `GUARDIAN_LANGUAGE` * | – (angličtina) | jazyk notifikací: en, cs, de, es, id, it, pl, pt (brazilská portugalština), tr, uk (prázdné nebo nepodporované = angličtina; UI včetně alertů má vlastní přepínač jazyka) |
 | `GUARDIAN_TELEGRAM_TOKEN` / `GUARDIAN_TELEGRAM_CHAT` * | – | token Telegram bota a chat ID |
 | `GUARDIAN_NTFY_URL` / `GUARDIAN_NTFY_TOKEN` * | – | URL ntfy tématu a volitelný token |
 | `TZ` | UTC | časová zóna, např. `Europe/Prague` |

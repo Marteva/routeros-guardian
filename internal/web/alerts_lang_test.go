@@ -88,7 +88,7 @@ func TestAlertsLang(t *testing.T) {
 	if en := alertByID(t, get("?lang=en"), 10); en.Title != enTitle || en.Detail != stored.Detail {
 		t.Errorf("en: %q / %q", en.Title, en.Detail)
 	}
-	for _, q := range []string{"", "?lang=", "?lang=xx", "?lang=CS", "?open=1&lang=cs%20"} {
+	for _, q := range []string{"", "?lang=", "?lang=xx", "?lang=ru", "?lang=CS", "?open=1&lang=cs%20"} {
 		if a := alertByID(t, get(q), 10); a.Title != stored.Title || a.Detail != stored.Detail {
 			t.Errorf("%q: stored text expected, got %q", q, a.Title)
 		}

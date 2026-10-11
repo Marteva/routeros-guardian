@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
+	"path"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -577,6 +580,74 @@ func TestStaticUI(t *testing.T) {
 	wantCode(t, f.do(t, "GET", "/secret.txt", ""), 404)
 	wantCode(t, f.do(t, "GET", "/static/app.js", ""), 404)
 	wantCode(t, f.do(t, "POST", "/", ""), http.StatusMethodNotAllowed)
+}
+
+// Every embedded static file is served with the right content type (the
+// nosniff header makes browsers reject scripts/styles/images with a wrong one).
+func TestStaticFilesServed(t *testing.T) {
+	f := newFixture(t)
+	types := map[string]string{
+		".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml",
+	}
+	entries, err := fs.ReadDir(staticFS, "static")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) < 6 {
+		t.Fatalf("only %d static files", len(entries))
+	}
+	for _, e := range entries {
+		if e.IsDir() {
+			t.Errorf("static/%s: sub-directories are not served (the handler serves top-level files only)", e.Name())
+			continue
+		}
+		p := "/" + e.Name()
+		if e.Name() == "index.html" {
+			p = "/"
+		}
+		rec := f.do(t, "GET", p, "")
+		wantCode(t, rec, 200)
+		want, ok := types[path.Ext(e.Name())]
+		if !ok {
+			t.Errorf("static/%s: unexpected file type", e.Name())
+			continue
+		}
+		if ct := rec.Header().Get("Content-Type"); !strings.HasPrefix(ct, want) {
+			t.Errorf("%s: Content-Type %q, want %s", p, ct, want)
+		}
+		if rec.Header().Get("X-Content-Type-Options") != "nosniff" {
+			t.Errorf("%s: missing nosniff", p)
+		}
+	}
+}
+
+// The CSP allows only this origin (plus inline styles and data: images used by
+// the UI): no external hosts, no inline or eval'd scripts.
+func TestCSPHasNoExternalSources(t *testing.T) {
+	f := newFixture(t)
+	csp := f.do(t, "GET", "/", "").Header().Get("Content-Security-Policy")
+	allowed := map[string]bool{"'self'": true, "'none'": true, "'unsafe-inline'": true, "data:": true}
+	directives := map[string][]string{}
+	for _, d := range strings.Split(csp, ";") {
+		fields := strings.Fields(d)
+		if len(fields) == 0 {
+			continue
+		}
+		directives[fields[0]] = fields[1:]
+		for _, src := range fields[1:] {
+			if !allowed[src] {
+				t.Errorf("CSP %s allows %q", fields[0], src)
+			}
+		}
+	}
+	for _, name := range []string{"default-src", "script-src", "img-src", "frame-ancestors"} {
+		if directives[name] == nil {
+			t.Errorf("CSP has no %s: %q", name, csp)
+		}
+	}
+	if !slices.Equal(directives["script-src"], []string{"'self'"}) {
+		t.Errorf("script-src = %v, want only 'self'", directives["script-src"])
+	}
 }
 
 func TestNewDefaults(t *testing.T) {

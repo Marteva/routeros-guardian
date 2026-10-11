@@ -23,8 +23,10 @@
     <span class="chip muted" data-i18n="app.loading">Loading…</span>
   </div>
   <div class="tools">
-    <label class="sr-only" for="lang-select" data-i18n="hdr.language">Language</label>
-    <select id="lang-select" class="lang"></select>
+    <div class="lang-picker" id="lang-picker">
+      <button type="button" class="icon-btn lang-btn" id="lang-btn" aria-label="Language" aria-haspopup="listbox" aria-expanded="false" aria-controls="lang-menu"><span class="lang-flag" id="lang-flag"></span><span class="lang-caret" aria-hidden="true">▾</span></button>
+      <ul class="lang-menu" id="lang-menu" role="listbox" hidden data-i18n-attr="aria-label:hdr.language"></ul>
+    </div>
     <button type="button" class="icon-btn" id="theme-btn">◐</button>
     <button type="button" class="icon-btn" id="settings-btn" data-i18n-attr="title:hdr.settings;aria-label:hdr.settings">⚙</button>
   </div>

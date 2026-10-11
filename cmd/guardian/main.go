@@ -89,6 +89,9 @@ func run(log *slog.Logger) error {
 	}
 
 	// Env vars are defaults; values saved in the UI (settings table) win.
+	if l := strings.TrimSpace(cfg.Language); l != "" && settings.NormalizeLanguage(l) == "" {
+		log.Warn("GUARDIAN_LANGUAGE is not supported, using English", "value", l, "supported", settings.Languages)
+	}
 	mgr, err := settings.NewManager(ctx, st, settings.Defaults(cfg))
 	if err != nil {
 		return err

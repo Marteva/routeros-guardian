@@ -32,7 +32,7 @@ type Config struct {
 	WebUser string // GUARDIAN_WEB_USER; empty = UI without login
 	WebPass string // GUARDIAN_WEB_PASS
 
-	Language string // GUARDIAN_LANGUAGE: alerts/notifications language (en, cs, de, pl, ru, es, pt); "" = en, UI follows the browser
+	Language string // GUARDIAN_LANGUAGE: alerts/notifications language (en, cs, de, pl, es, pt); "" or unsupported = en, UI follows the browser
 
 	NtfyURL        string // full topic URL, e.g. https://ntfy.sh/my-secret-topic
 	NtfyToken      string

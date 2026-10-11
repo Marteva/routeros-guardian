@@ -124,7 +124,7 @@ DisabledDetectors, DedupWindow, Retention), `Defaults(config.Config)`, `Validate
 `Manager{NewManager, Get, Update(ctx, fn), OnChange(fn)}`. Env = defaults, values saved in UI win.
 
 ### internal/i18n (skeleton by coordinator, catalog filled by detect agent)
-`i18n.T(lang, key, args...)`, `i18n.Register(lang, entries)` (from init). Languages: en, cs, de, pl, ru, es, pt.
+`i18n.T(lang, key, args...)`, `i18n.Register(lang, entries)` (from init). Languages: en, cs, de, es, id, it, pl, pt (Brazilian Portuguese), tr, uk (`settings.Languages`).
 
 ### internal/detect
 - `func (e *Engine) SetSettings(s settings.Settings)` – LearnPeriod, LearningStart (if non-zero it

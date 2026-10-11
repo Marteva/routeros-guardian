@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -346,7 +347,8 @@ func TestDeviceName(t *testing.T) {
 		}
 	}
 	for lang, want := range map[string]string{"cs": "neznámé zařízení", "de": "unbekanntes Gerät",
-		"ru": "неизвестное устройство", "xx": "unknown device", "": "unknown device"} {
+		"pl": "nieznane urządzenie", "es": "dispositivo desconocido", "pt": "dispositivo desconhecido",
+		"ru": "unknown device", "xx": "unknown device", "": "unknown device"} {
 		if got := DeviceNameLang(model.Device{}, lang); got != want {
 			t.Errorf("%q: got %q want %q", lang, got, want)
 		}
@@ -369,9 +371,9 @@ func TestDeviceLineLanguages(t *testing.T) {
 		{"de", model.Alert{}, model.Device{MAC: "AA", Hostname: "tv"}, "Gerät: tv (AA)"},
 		{"pl", model.Alert{}, model.Device{MAC: "AA", IP: ip}, "Urządzenie: AA (192.168.88.10)"},
 		{"es", model.Alert{DeviceMAC: "BB"}, model.Device{}, "Dispositivo: BB"},
-		{"ru", model.Alert{}, model.Device{MAC: "AA"}, "Устройство: AA"},
 		{"pt", model.Alert{}, model.Device{}, ""},                    // no device at all
 		{"xx", model.Alert{}, model.Device{MAC: "AA"}, "Device: AA"}, // unknown language → English
+		{"ru", model.Alert{}, model.Device{MAC: "AA"}, "Device: AA"}, // removed language → English
 	}
 	for _, c := range cases {
 		if got := deviceLine(c.lang, c.a, c.d); got != c.want {
@@ -381,6 +383,11 @@ func TestDeviceLineLanguages(t *testing.T) {
 }
 
 func TestAllLanguagesTranslated(t *testing.T) {
+	for lang := range translations {
+		if !slices.Contains(settings.Languages, lang) {
+			t.Errorf("translations for unsupported language %q", lang)
+		}
+	}
 	for _, lang := range settings.Languages {
 		for _, k := range messageKeys {
 			got := i18n.T(lang, k)
@@ -422,15 +429,15 @@ func TestNotifiersUseContextLanguage(t *testing.T) {
 
 	tg := NewTelegram("1:X", "2").(*telegram)
 	tg.baseURL = srv.URL
-	if err := tg.Send(withLang(context.Background(), "ru"), a, d); err != nil {
+	if err := tg.Send(withLang(context.Background(), "pl"), a, d); err != nil {
 		t.Fatal(err)
 	}
 	var payload map[string]any
 	if err := json.Unmarshal([]byte(body), &payload); err != nil {
 		t.Fatal(err)
 	}
-	if text, _ := payload["text"].(string); !strings.Contains(text, "<i>Устройство: kamera (AA:BB:CC:DD:EE:FF)</i>") {
-		t.Errorf("telegram ru text %q", text)
+	if text, _ := payload["text"].(string); !strings.Contains(text, "<i>Urządzenie: kamera (AA:BB:CC:DD:EE:FF)</i>") {
+		t.Errorf("telegram pl text %q", text)
 	}
 }
 

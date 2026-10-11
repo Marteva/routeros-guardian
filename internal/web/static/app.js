@@ -7,8 +7,15 @@
   const ONLINE_MS = 5 * 60 * 1000;
   const NEW_MS = 24 * 3600 * 1000;
   const REPO_URL = "https://github.com/Marteva/routeros-guardian";
-  const LANGS = ["en", "cs", "de", "pl", "ru", "es", "pt"];
-  const LANG_NAMES = { en: "English", cs: "Čeština", de: "Deutsch", pl: "Polski", ru: "Русский", es: "Español", pt: "Português" };
+  // settings.Languages (server), in the order of the language picker
+  const LANGS = ["en", "cs", "de", "es", "id", "it", "pl", "pt", "tr", "uk"];
+  // native names (picker, settings); pt is Brazilian Portuguese
+  const LANG_NAMES = {
+    en: "English", cs: "Čeština", de: "Deutsch", es: "Español", id: "Bahasa Indonesia",
+    it: "Italiano", pl: "Polski", pt: "Português (Brasil)", tr: "Türkçe", uk: "Українська",
+  };
+  // browser language codes that differ from ours (old Java/Android code for Indonesian)
+  const LANG_ALIASES = { in: "id" };
   // model.Kinds (server); labels are kind.<k> in the catalog
   const KINDS = ["phone", "tablet", "computer", "tv", "camera", "iot", "speaker", "console", "printer", "nas", "network", "unknown"];
   const DETECTORS = ["new_device", "new_country", "new_asn", "upload_spike", "dest_fanout"];
@@ -50,13 +57,18 @@
   let lang = "en";
   let fmt = null;
 
+  /** the language chosen in this browser; a stale value (e.g. the removed "ru") is dropped */
   function storedLang() {
     const v = storage.get("guardian.lang");
-    return LANGS.includes(v) ? v : null;
+    if (LANGS.includes(v)) return v;
+    if (v != null) storage.set("guardian.lang", null);
+    return null;
   }
+  /** first supported browser language: pt-PT/pt-BR → pt, uk-UA → uk; unsupported ones (ru-RU…) are skipped */
   function browserLang() {
     for (const l of navigator.languages || [navigator.language || ""]) {
-      const base = String(l).toLowerCase().split("-")[0];
+      let base = String(l).toLowerCase().split("-")[0];
+      base = LANG_ALIASES[base] || base;
       if (LANGS.includes(base)) return base;
     }
     return null;
@@ -125,8 +137,7 @@
         if (attr && key) el.setAttribute(attr.trim(), t(key.trim()));
       }
     });
-    const sel = $("#lang-select");
-    if (sel) sel.value = lang;
+    renderLangPicker();
     renderThemeBtn();
     renderMergeToggle();
   }
@@ -171,6 +182,171 @@
     b.textContent = THEME_ICON[theme];
     b.title = label + " – " + t("theme.change");
     b.setAttribute("aria-label", label);
+  }
+
+  // ------------------------------------------------------------------ language picker
+  // Flags as inline SVG (no emoji: Windows does not render flag emoji; no
+  // external files). [viewBox, shapes]; shown at 3:2, other ratios are cropped
+  // to it (xMidYMid slice). pt is Brazilian Portuguese → flag of Brazil
+  // (simplified: no stars and motto).
+  const FLAGS = {
+    en: ["0 0 60 30", [ // United Kingdom (2:1, the ends of the saltire are cropped)
+      ["path", { d: "M0 0h60v30H0z", fill: "#012169" }],
+      ["path", { d: "M0 0l60 30M60 0L0 30", stroke: "#fff", "stroke-width": 6 }],
+      // counterchanged red saltire: offset from the diagonals, clockwise
+      ["path", { d: "M-.45 .89l30 15M29.55 14.11l30-15M30.45 14.11l30 15M30.45 15.89l-30 15", stroke: "#c8102e", "stroke-width": 2 }],
+      ["path", { d: "M30 0v30M0 15h60", stroke: "#fff", "stroke-width": 10 }],
+      ["path", { d: "M30 0v30M0 15h60", stroke: "#c8102e", "stroke-width": 6 }],
+    ]],
+    cs: ["0 0 30 20", [ // Czech Republic
+      ["path", { d: "M0 0h30v20H0z", fill: "#d7141a" }],
+      ["path", { d: "M0 0h30v10H0z", fill: "#fff" }],
+      ["path", { d: "M0 0l15 10L0 20z", fill: "#11457e" }],
+    ]],
+    de: ["0 0 30 20", [ // Germany
+      ["path", { d: "M0 0h30v20H0z", fill: "#ffce00" }],
+      ["path", { d: "M0 0h30v13.333H0z", fill: "#dd0000" }],
+      ["path", { d: "M0 0h30v6.667H0z", fill: "#000" }],
+    ]],
+    es: ["0 0 30 20", [ // Spain (without the coat of arms)
+      ["path", { d: "M0 0h30v20H0z", fill: "#aa151b" }],
+      ["path", { d: "M0 5h30v10H0z", fill: "#f1bf00" }],
+    ]],
+    id: ["0 0 30 20", [ // Indonesia
+      ["path", { d: "M0 0h30v20H0z", fill: "#fff" }],
+      ["path", { d: "M0 0h30v10H0z", fill: "#e70011" }],
+    ]],
+    it: ["0 0 30 20", [ // Italy
+      ["path", { d: "M0 0h30v20H0z", fill: "#fff" }],
+      ["path", { d: "M0 0h10v20H0z", fill: "#009246" }],
+      ["path", { d: "M20 0h10v20H20z", fill: "#ce2b37" }],
+    ]],
+    pl: ["0 0 30 20", [ // Poland
+      ["path", { d: "M0 0h30v20H0z", fill: "#fff" }],
+      ["path", { d: "M0 10h30v10H0z", fill: "#dc143c" }],
+    ]],
+    pt: ["-2100 -1470 4200 2940", [ // Brazil (10:7)
+      ["path", { d: "M-2100-1470h4200v2940h-4200z", fill: "#009440" }],
+      ["path", { d: "M-1743 0L0 1113 1743 0 0-1113z", fill: "#ffcb00" }],
+      ["circle", { r: 735, fill: "#302681" }],
+      // white band: ring r 1680–1785 around (-420, 1470), cut to the globe
+      ["path", { d: "M-672-297A1785 1785 0 0 1 728 103 735 735 0 0 1 702 219 1680 1680 0 0 0-711-185 735 735 0 0 1-672-297z", fill: "#fff" }],
+    ]],
+    tr: ["0 0 30 20", [ // Turkey (crescent and star per the flag law)
+      ["path", { d: "M0 0h30v20H0z", fill: "#e30a17" }],
+      ["path", { d: "M14.225 12.674A5 5 0 1 1 14.225 7.326 4 4 0 1 0 14.225 12.674zM13.917 10l4.522-1.469-2.795 3.847V7.622l2.795 3.847z", fill: "#fff" }],
+    ]],
+    uk: ["0 0 30 20", [ // Ukraine
+      ["path", { d: "M0 0h30v20H0z", fill: "#ffd700" }],
+      ["path", { d: "M0 0h30v10H0z", fill: "#0057b7" }],
+    ]],
+  };
+
+  function flagIcon(l) {
+    const [viewBox, shapes] = FLAGS[l] || FLAGS.en;
+    return s("svg", { class: "flag", viewBox, preserveAspectRatio: "xMidYMid slice", "aria-hidden": "true", focusable: "false" },
+      shapes.map(([tag, attrs]) => s(tag, attrs)));
+  }
+
+  const langOptions = () => [...document.querySelectorAll("#lang-menu [role=option]")];
+  const langMenuOpen = () => !$("#lang-menu").hidden;
+
+  /** button: flag of the current language; menu: which option is selected */
+  function renderLangPicker() {
+    const btn = $("#lang-btn");
+    if (!btn) return;
+    const label = t("hdr.language.current", { name: LANG_NAMES[lang] });
+    btn.setAttribute("aria-label", label);
+    btn.title = label;
+    $("#lang-flag").replaceChildren(flagIcon(lang));
+    for (const o of langOptions()) o.setAttribute("aria-selected", String(o.dataset.lang === lang));
+  }
+
+  /** opens the menu and focuses the current language */
+  function openLangMenu() {
+    const menu = $("#lang-menu"), btn = $("#lang-btn");
+    menu.hidden = false;
+    // the menu opens to the left of the button; when the header wraps and the
+    // button ends up near the left edge it opens to the right instead
+    menu.classList.toggle("from-start", btn.getBoundingClientRect().right - menu.offsetWidth < 8);
+    btn.setAttribute("aria-expanded", "true");
+    const opts = langOptions();
+    (opts.find((o) => o.dataset.lang === lang) || opts[0]).focus();
+  }
+
+  function closeLangMenu(focusButton) {
+    if (!langMenuOpen()) return;
+    $("#lang-menu").hidden = true;
+    $("#lang-btn").setAttribute("aria-expanded", "false");
+    if (focusButton) $("#lang-btn").focus();
+  }
+
+  function pickLang(l) {
+    closeLangMenu(true);
+    if (l !== lang) switchLang(l);
+    else storage.set("guardian.lang", l); // an explicit choice wins over the server setting next time
+  }
+
+  /** first-letter search in the open menu ("p" → Polski, Português…; diacritics ignored) */
+  const typeahead = { text: "", at: 0 };
+  const fold = (x) => x.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase();
+  function langTypeahead(key, from) {
+    const now = Date.now();
+    typeahead.text = (now - typeahead.at < 800 ? typeahead.text : "") + fold(key);
+    typeahead.at = now;
+    let q = typeahead.text;
+    if ([...q].every((c) => c === q[0])) q = q[0]; // "pp…" cycles through the P entries
+    const opts = langOptions();
+    const start = q.length === 1 ? from + 1 : from;
+    for (let k = 0; k < opts.length; k++) {
+      const o = opts[(start + k + opts.length) % opts.length];
+      if (fold(o.textContent).startsWith(q)) { o.focus(); return; }
+    }
+  }
+
+  function initLangPicker() {
+    const picker = $("#lang-picker"), btn = $("#lang-btn"), menu = $("#lang-menu");
+    menu.replaceChildren(...LANGS.map((l) => h("li", { role: "option", id: "lang-opt-" + l, "data-lang": l, tabindex: "-1", "aria-selected": "false" },
+      flagIcon(l), h("span", { class: "lang-name", lang: l }, LANG_NAMES[l]))));
+    btn.addEventListener("click", () => { if (langMenuOpen()) closeLangMenu(true); else openLangMenu(); });
+    btn.addEventListener("keydown", (e) => {
+      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && !langMenuOpen()) { e.preventDefault(); openLangMenu(); }
+      else if (e.key === "Escape" && langMenuOpen()) { e.preventDefault(); closeLangMenu(true); }
+    });
+    menu.addEventListener("click", (e) => {
+      const o = e.target.closest("[role=option]");
+      if (o) pickLang(o.dataset.lang);
+    });
+    menu.addEventListener("keydown", (e) => {
+      const opts = langOptions();
+      const i = opts.indexOf(document.activeElement);
+      let next;
+      switch (e.key) {
+        case "ArrowDown": next = Math.min(i + 1, opts.length - 1); break;
+        case "ArrowUp": next = Math.max(i - 1, 0); break;
+        case "Home": case "PageUp": next = 0; break;
+        case "End": case "PageDown": next = opts.length - 1; break;
+        case "Enter": case " ":
+          e.preventDefault();
+          if (i >= 0) pickLang(opts[i].dataset.lang);
+          return;
+        case "Escape":
+          e.preventDefault();
+          closeLangMenu(true);
+          return;
+        case "Tab":
+          closeLangMenu(false); // focus moves on as usual
+          return;
+        default:
+          if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); langTypeahead(e.key, i); }
+          return;
+      }
+      e.preventDefault();
+      opts[next].focus();
+    });
+    // close when focus moves to another control, or on a click/tap outside
+    picker.addEventListener("focusout", (e) => { if (e.relatedTarget && !picker.contains(e.relatedTarget)) closeLangMenu(false); });
+    document.addEventListener("pointerdown", (e) => { if (!picker.contains(e.target)) closeLangMenu(false); });
   }
 
   // ------------------------------------------------------------------ sorting
@@ -1366,10 +1542,8 @@
 
   // ------------------------------------------------------------------ init
   function init() {
-    const langSel = $("#lang-select");
-    langSel.replaceChildren(...LANGS.map((l) => h("option", { value: l, lang: l }, LANG_NAMES[l])));
+    initLangPicker();
     const langReady = initLang(); // sets the language synchronously, may switch it once settings arrive
-    langSel.addEventListener("change", () => switchLang(langSel.value));
     $("#theme-btn").addEventListener("click", () => setTheme(THEME_NEXT[theme]));
     $("#settings-btn").addEventListener("click", openSettings);
 

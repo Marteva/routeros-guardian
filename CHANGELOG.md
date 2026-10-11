@@ -9,6 +9,34 @@ release dates or tags.
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-10-11
+
+### Added
+
+- **Indonesian, Italian, Turkish and Ukrainian** translations of the UI,
+  alerts and notifications - Guardian now speaks 10 languages. Ukrainian
+  counted nouns use their own plural rules (1 / 2-4 / 5+). The new
+  translations are machine-assisted; corrections from native speakers are
+  welcome (see CONTRIBUTING.md).
+
+### Changed
+
+- **Language picker with flags.** The language drop-down in the header is now
+  a compact flag button; it opens a list with the flag and native name of
+  every language (keyboard and screen-reader friendly, works on phones).
+  Flags are inline SVG, so they also show on Windows.
+- **Portuguese is now Brazilian Portuguese** (vocabulary and spelling, "você");
+  the language code stays `pt` and it is shown as "Português (Brasil)".
+- An unsupported `GUARDIAN_LANGUAGE` value now falls back to English with a
+  warning in the log instead of blocking every change in Settings.
+
+### Removed
+
+- **Russian translation.** A saved Russian notification language switches to
+  English on upgrade - the other saved settings (Telegram, ntfy, …) are kept -
+  and a browser that had Russian selected falls back to the notification
+  language, then the browser language, then English.
+
 ### Documentation
 
 - Pulling from GHCR (`remote-image=ghcr.io/marteva/routeros-guardian:latest`),

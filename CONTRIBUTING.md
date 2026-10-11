@@ -88,8 +88,9 @@ CI runs the same checks and cross-builds all three architectures.
 
 ## Translations
 
-Guardian supports English (`en`), Czech (`cs`), German (`de`), Polish (`pl`),
-Russian (`ru`), Spanish (`es`) and Portuguese (`pt`). There are two catalogs:
+Guardian supports English (`en`), Czech (`cs`), German (`de`), Spanish (`es`),
+Indonesian (`id`), Italian (`it`), Polish (`pl`), Brazilian Portuguese (`pt`),
+Turkish (`tr`) and Ukrainian (`uk`). There are two catalogs:
 
 | What | Where |
 |---|---|
@@ -98,10 +99,21 @@ Russian (`ru`), Spanish (`es`) and Portuguese (`pt`). There are two catalogs:
 
 English is the fallback for missing keys. To improve a translation, edit the
 entries for your language in both places. To add a new language, add it to
-both catalogs and to `settings.Languages` in
-[`internal/settings/settings.go`](internal/settings/settings.go), and
-mention it in the README. Native-speaker reviews of existing translations are
-very welcome.
+both catalogs, to `settings.Languages` in
+[`internal/settings/settings.go`](internal/settings/settings.go), to `LANGS`,
+`LANG_NAMES` and `FLAGS` (inline SVG flag for the language picker) in
+[`internal/web/static/app.js`](internal/web/static/app.js), and mention it in
+the README. Languages that inflect nouns after numbers also need a rule in
+`pluralForm` ([`internal/detect/format.go`](internal/detect/format.go)).
+The tests check that every language has every key with the same placeholders.
+
+**Native speakers wanted.** English and Czech are written by the maintainer;
+the other translations were machine-assisted and have not been fully reviewed
+yet. If you speak German, Spanish, Indonesian, Italian, Polish, Brazilian
+Portuguese, Turkish or Ukrainian, corrections are very welcome - a pull
+request or an issue listing the wrong texts is enough. Please keep short UI
+labels short (the UI must fit on a 320 px wide phone) and keep the
+placeholders (`{name}`, `%s`, …) unchanged.
 
 ## Documentation
 

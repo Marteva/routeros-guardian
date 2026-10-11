@@ -2,7 +2,7 @@ package i18n
 
 // Alert texts of internal/detect (English). Every key here must exist in all
 // languages (see alerts_test.go). Counted nouns use the suffixes
-// .one/.few/.many (few is only distinct in cs, pl and ru).
+// .one/.few/.many (few is only distinct in cs and pl).
 var alertsEN = map[string]string{
 	// number and date formatting
 	"fmt.decimal":  ".",

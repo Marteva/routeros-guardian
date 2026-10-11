@@ -68,7 +68,8 @@ already have.
   and drops its existing connections.
 - **Web UI** - devices (grouping, sorting, notes, type override, manual
   merge of devices with rotating MACs), alerts, settings, light/dark theme;
-  7 languages (English, Czech, German, Polish, Russian, Spanish, Portuguese).
+  10 languages (English, Czech, German, Spanish, Indonesian, Italian, Polish,
+  Brazilian Portuguese, Turkish, Ukrainian) with a flag language picker.
 - **Settings in the UI** - notifications, language, learning period,
   sensitivity, detectors, retention - no container restart needed.
 - **GeoIP** - country and ASN lookups with the free DB-IP Lite databases.
@@ -264,7 +265,7 @@ Guardian reads environment variables at startup (set with
 | `GUARDIAN_LEARN_PERIOD` * | `7d` | learning period |
 | `GUARDIAN_RETENTION` * | `60d` | how long statistics are kept |
 | `GUARDIAN_DEDUP_WINDOW` * | `6h` | identical alerts are sent once per window |
-| `GUARDIAN_LANGUAGE` * | – (English) | notification language: en, cs, de, pl, ru, es, pt (empty = English; the UI, alerts included, has its own language switch) |
+| `GUARDIAN_LANGUAGE` * | – (English) | notification language: en, cs, de, es, id, it, pl, pt (Brazilian Portuguese), tr, uk (empty or unsupported = English; the UI, alerts included, has its own language picker) |
 | `GUARDIAN_TELEGRAM_TOKEN` / `GUARDIAN_TELEGRAM_CHAT` * | - | Telegram bot token and chat ID |
 | `GUARDIAN_NTFY_URL` / `GUARDIAN_NTFY_TOKEN` * | - | ntfy topic URL and optional token |
 | `TZ` | UTC | time zone, e.g. `Europe/Berlin` |

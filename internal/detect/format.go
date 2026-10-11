@@ -17,8 +17,10 @@ type loc string
 func (l loc) t(key string, args ...any) string { return i18n.T(string(l), key, args...) }
 
 // pluralForm returns the plural category of n in lang: "one", "few" or
-// "many". "few" is distinct only for Czech, Polish and Russian; the other
-// languages register identical few/many forms.
+// "many". "few" is distinct only for Czech, Polish and Ukrainian (Ukrainian
+// "one" also covers 21, 31…); the other languages register identical
+// few/many forms (Indonesian and Turkish do not inflect nouns after numbers
+// at all, so all three of their forms are the same).
 func pluralForm(lang string, n int) string {
 	if n < 0 {
 		n = -n
@@ -41,7 +43,7 @@ func pluralForm(lang string, n int) string {
 			return "few"
 		}
 		return "many"
-	case "ru":
+	case "uk":
 		switch {
 		case m10 == 1 && m100 != 11:
 			return "one"
