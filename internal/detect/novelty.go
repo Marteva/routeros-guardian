@@ -3,7 +3,6 @@ package detect
 import (
 	"context"
 	"fmt"
-	"net/netip"
 	"sort"
 	"strings"
 	"time"
@@ -272,68 +271,27 @@ func asLabel(asn uint32, org string) string {
 	return fmt.Sprintf("AS%d %s", asn, org)
 }
 
-func examples(l loc, s []netip.AddrPort) string {
-	if len(s) == 0 {
-		return ""
-	}
-	parts := make([]string, len(s))
-	for i, a := range s {
-		parts[i] = a.String()
-	}
-	return l.t("alert.dest.examples", strings.Join(parts, ", "))
-}
-
-func destLine(l loc, p *pending, what string) string {
-	if al := asLabel(p.asn, p.asOrg); al != "" && !strings.HasPrefix(what, al) {
-		what += " (" + al + ")"
-	}
-	return l.t("alert.dest.line", what, l.bytes(float64(p.tx)), l.bytes(float64(p.rx)), p.conns,
-		l.word("new_conn", p.conns), examples(l, p.samples))
-}
-
 func (e *Engine) countryAlert(st *devState, prof Profile, ps []*pending, at time.Time, critical bool) model.Alert {
-	l := e.lang
 	ccs := make([]string, len(ps))
 	for i, p := range ps {
 		ccs[i] = p.country
 	}
-	name := l.deviceName(st.dev)
-	var title string
-	if len(ccs) == 1 {
-		title = l.t("alert.country.title.one", name, ccs[0])
-	} else {
-		title = l.t("alert.country.title.many", name, strings.Join(ccs, ", "))
-	}
-	known := sortedKeys(st.countries, func(a, b string) bool { return a < b }, 20)
-	var det []string
-	for _, p := range ps {
-		det = append(det, l.t("alert.country.first", destLine(l, p, p.country)))
-	}
-	if len(known) > 0 {
-		n := len(st.countries)
-		det = append(det, l.t("alert.country.known", n, l.word("country", n), strings.Join(known, ", ")))
-	}
 	sev := model.SevWarning
 	if critical {
 		sev = model.SevCritical
-		det = append(det, l.t("alert.country.advice_crit", l.kind(st.dev.EffectiveKind()),
-			l.bytes(float64(prof.CountryCriticalTx))))
-	} else {
-		det = append(det, l.t("alert.country.advice_warn"))
 	}
-	return model.Alert{
+	a := model.Alert{
 		Time:      at,
 		DeviceMAC: st.dev.MAC,
 		Kind:      model.AlertNewCountry,
 		Severity:  sev,
-		Title:     title,
-		Detail:    strings.Join(det, " "),
 		Evidence: map[string]any{
 			"hour":            st.curHour,
 			"device_kind":     st.dev.EffectiveKind(),
+			"device":          snapshotOf(st.dev),
 			"new":             destEvidence(ps),
 			"known_countries": len(st.countries),
-			"known_list":      known,
+			"known_list":      sortedKeys(st.countries, func(a, b string) bool { return a < b }, 20),
 			"active_hours":    st.activeHours,
 			"min_tx":          prof.CountryMinTx,
 			"min_total":       prof.CountryMinTotal,
@@ -343,43 +301,24 @@ func (e *Engine) countryAlert(st *devState, prof Profile, ps []*pending, at time
 		},
 		DedupKey: "new_country:" + st.dev.MAC + ":" + strings.Join(ccs, ","),
 	}
+	e.setText(&a, &st.dev)
+	return a
 }
 
 func (e *Engine) asnAlert(st *devState, prof Profile, ps []*pending, at time.Time) model.Alert {
-	l := e.lang
-	labels := make([]string, len(ps))
 	keys := make([]string, len(ps))
 	for i, p := range ps {
-		labels[i] = asLabel(p.asn, p.asOrg)
 		keys[i] = fmt.Sprint(p.asn)
 	}
-	name := l.deviceName(st.dev)
-	var title string
-	if len(ps) == 1 {
-		title = l.t("alert.asn.title.one", name, labels[0])
-	} else {
-		title = l.t("alert.asn.title.many", name, len(ps))
-	}
-	var det []string
-	for i, p := range ps {
-		what := labels[i]
-		if p.country != "" {
-			what += " [" + p.country + "]"
-		}
-		det = append(det, l.t("alert.asn.first", destLine(l, p, what)))
-	}
-	n := len(st.asns)
-	det = append(det, l.t("alert.asn.known", l.kind(st.dev.EffectiveKind()), n, l.word("network", n)))
-	return model.Alert{
+	a := model.Alert{
 		Time:      at,
 		DeviceMAC: st.dev.MAC,
 		Kind:      model.AlertNewASN,
 		Severity:  model.SevWarning,
-		Title:     title,
-		Detail:    strings.Join(det, " "),
 		Evidence: map[string]any{
 			"hour":         st.curHour,
 			"device_kind":  st.dev.EffectiveKind(),
+			"device":       snapshotOf(st.dev),
 			"new":          destEvidence(ps),
 			"known_asns":   len(st.asns),
 			"active_hours": st.activeHours,
@@ -390,4 +329,6 @@ func (e *Engine) asnAlert(st *devState, prof Profile, ps []*pending, at time.Tim
 		},
 		DedupKey: "new_asn:" + st.dev.MAC + ":" + strings.Join(keys, ","),
 	}
+	e.setText(&a, &st.dev)
+	return a
 }

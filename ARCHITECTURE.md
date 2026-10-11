@@ -132,6 +132,10 @@ DisabledDetectors, DedupWindow, Retention), `Defaults(config.Config)`, `Validate
   thresholds), DisabledDetectors, Language (alert texts via i18n). Safe for concurrent use.
 - `func (e *Engine) Reset()` – drop all in-memory caches/baselines (called after a data wipe).
 - Use `Device.EffectiveKind()` for sensitivity profiles and names.
+- `func RenderAlert(a model.Alert, d *model.Device, lang string) (title, detail string, ok bool)` –
+  rebuilds an alert's texts in any language from its Evidence (the detectors write their texts
+  through it); `d` = current device (nil: snapshot in the evidence); ok=false for evidence of
+  older versions (keep the stored text). See internal/detect/DESIGN.md "Texts and languages".
 
 ### internal/notify
 - `func BuildNotifiers(s settings.Settings) []Notifier`
@@ -144,3 +148,6 @@ DisabledDetectors, DedupWindow, Retention), `Defaults(config.Config)`, `Validate
 only `…Set: true`; in PUT absent/null = unchanged, "" = clear), `POST /api/settings/test-notify`,
 `POST /api/reset {"scope":"learned"|"all"}`, `PATCH /api/devices/{mac} {note?, kind?}` (kind "" = auto),
 `POST /api/devices/merge {"macs":[…]}`, `POST /api/devices/{mac}/unmerge`.
+`GET /api/alerts` and `GET /api/devices/{mac}` accept `?lang=xx` (one of `settings.Languages`):
+alert title/detail rendered in that language via `detect.RenderAlert`; missing/invalid = stored
+text (the notification language at the time the alert was raised).

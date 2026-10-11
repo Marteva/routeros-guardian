@@ -262,7 +262,7 @@ Guardian při startu čte proměnné prostředí (nastavují se přes
 | `GUARDIAN_LEARN_PERIOD` * | `7d` | délka učení |
 | `GUARDIAN_RETENTION` * | `60d` | jak dlouho se drží statistiky |
 | `GUARDIAN_DEDUP_WINDOW` * | `6h` | stejný alert se v tomto okně pošle jen jednou |
-| `GUARDIAN_LANGUAGE` * | – (angličtina) | jazyk alertů a notifikací: en, cs, de, pl, ru, es, pt (prázdné = alerty anglicky, UI podle prohlížeče) |
+| `GUARDIAN_LANGUAGE` * | – (angličtina) | jazyk notifikací: en, cs, de, pl, ru, es, pt (prázdné = angličtina; UI včetně alertů má vlastní přepínač jazyka) |
 | `GUARDIAN_TELEGRAM_TOKEN` / `GUARDIAN_TELEGRAM_CHAT` * | – | token Telegram bota a chat ID |
 | `GUARDIAN_NTFY_URL` / `GUARDIAN_NTFY_TOKEN` * | – | URL ntfy tématu a volitelný token |
 | `TZ` | UTC | časová zóna, např. `Europe/Prague` |

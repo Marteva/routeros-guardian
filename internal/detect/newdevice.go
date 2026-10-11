@@ -2,7 +2,6 @@ package detect
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -63,40 +62,11 @@ func (e *Engine) newDeviceAlert(ctx context.Context, d model.Device, now time.Ti
 			"mac", d.MAC, "hostname", d.Hostname, "known_mac", other.MAC)
 		return model.Alert{}, false
 	}
-	l := e.lang
-	sev := newDeviceSeverity(d)
-	name := l.deviceName(d)
-	det := []string{l.t("alert.newdev.first", name)}
-	info := []string{"MAC " + d.MAC}
-	if d.IP.IsValid() {
-		info = append(info, "IP "+d.IP.String())
-	}
-	if d.Hostname != "" {
-		info = append(info, l.t("alert.newdev.hostname", d.Hostname))
-	}
-	if d.Comment != "" {
-		info = append(info, l.t("alert.newdev.comment", d.Comment))
-	}
-	if d.Vendor != "" {
-		info = append(info, l.t("alert.newdev.vendor", d.Vendor))
-	}
-	info = append(info, l.t("alert.newdev.kind", l.kind(d.EffectiveKind())))
-	det = append(det, strings.Join(info, ", ")+".")
-	if d.Randomized {
-		det = append(det, l.t("alert.newdev.randomized"))
-	}
-	if sev == model.SevWarning {
-		det = append(det, l.t("alert.newdev.advice_warning"))
-	} else {
-		det = append(det, l.t("alert.newdev.advice_info"))
-	}
-	return model.Alert{
+	a := model.Alert{
 		Time:      now,
 		DeviceMAC: d.MAC,
 		Kind:      model.AlertNewDevice,
-		Severity:  sev,
-		Title:     l.t("alert.newdev.title", name),
-		Detail:    strings.Join(det, " "),
+		Severity:  newDeviceSeverity(d),
 		Evidence: map[string]any{
 			"mac":        d.MAC,
 			"ip":         ipString(d),
@@ -106,9 +76,12 @@ func (e *Engine) newDeviceAlert(ctx context.Context, d model.Device, now time.Ti
 			"kind":       d.EffectiveKind(),
 			"randomized": d.Randomized,
 			"first_seen": d.FirstSeen,
+			"device":     snapshotOf(d),
 		},
 		DedupKey: "new_device:" + d.MAC,
-	}, true
+	}
+	e.setText(&a, &d)
+	return a, true
 }
 
 // sameHostAs reports another stored device with the same (case-insensitive)
@@ -185,7 +158,6 @@ func (e *Engine) inventorySummary(ctx context.Context, now time.Time) (model.Ale
 		return model.Alert{}, false
 	}
 	e.summaryFor = e.learnStart
-	l := e.lang
 	kinds := map[string]int{}
 	n := 0
 	for _, d := range devs {
@@ -201,34 +173,19 @@ func (e *Engine) inventorySummary(ctx context.Context, now time.Time) (model.Ale
 	if n == 0 {
 		return model.Alert{}, false
 	}
-	var parts []string
-	for _, k := range inventoryKindOrder {
-		if c := kinds[k]; c > 0 {
-			parts = append(parts, fmt.Sprintf("%s: %d", l.kind(k), c))
-		}
-	}
 	ev := map[string]any{"devices": n, "inventory_until": end, "learning_until": e.learningUntil(),
-		"learning_start": e.learnStart}
+		"learning_start": e.learnStart, "inventory_hours": int(e.inventoryPeriod().Hours()),
+		"learning": now.Before(e.learningUntil())}
 	for k, c := range kinds {
 		ev["kind_"+k] = c
 	}
-	hours := int(e.inventoryPeriod().Hours())
-	det := []string{
-		l.t("alert.inventory.found", hours, l.word("hour", hours), n, l.word("device", n), strings.Join(parts, ", ")),
-		l.t("alert.inventory.review"),
-	}
-	if now.Before(e.learningUntil()) {
-		det = append(det, l.t("alert.inventory.learning", l.datetime(e.learningUntil())))
-	} else {
-		det = append(det, l.t("alert.inventory.learned"))
-	}
-	return model.Alert{
+	a := model.Alert{
 		Time:     now,
 		Kind:     model.AlertNewDevice,
 		Severity: model.SevInfo,
-		Title:    l.t("alert.inventory.title", n, l.word("device", n)),
-		Detail:   strings.Join(det, " "),
 		Evidence: ev,
 		DedupKey: e.summaryKey(),
-	}, true
+	}
+	e.setText(&a, nil)
+	return a, true
 }

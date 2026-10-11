@@ -193,8 +193,9 @@ input:disabled { opacity: .6; }
 .alert.warning::before { background: var(--warn); }
 .alert.critical::before { background: var(--crit); }
 .alert.acked { opacity: .6; }
-.alert-title { font-weight: 600; }
-.alert-meta { color: var(--muted); font-size: .82rem; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.alert > :first-child { min-width: 0; } /* long unbreakable names must not push the button out */
+.alert-title { font-weight: 600; overflow-wrap: anywhere; }
+.alert-meta { color: var(--muted); font-size: .82rem; display: flex; flex-wrap: wrap; gap: 4px 10px; overflow-wrap: anywhere; }
 .alert-detail { margin-top: 3px; font-size: .9rem; white-space: pre-line; overflow-wrap: anywhere; }
 .alert .link { color: var(--accent); cursor: pointer; background: none; border: 0; padding: 0; font-size: inherit; }
 .sev { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
@@ -290,8 +291,15 @@ table.devices { width: 100%; border-collapse: collapse; }
   .devices td.c-status { grid-area: st; justify-self: end; text-align: right; }
   .devices tr.quarantined td { background: none; }
   .devices tr.quarantined { background: color-mix(in srgb, var(--crit-soft) 55%, transparent); border-radius: 8px; }
-  input[type=search] { width: auto; flex: 1 1 auto; }
-  .head-tools { flex: 1 1 100%; }
+  /* devices card head: buttons on one row (wrapping if needed), search below at full width */
+  .card-head { gap: 8px 10px; }
+  .head-tools { flex: 1 1 100%; flex-wrap: wrap; min-width: 0; }
+  .head-tools input[type=search] { flex: 1 1 100%; width: 100%; }
+  .mergebar .actions, .mergebar .actions .btn { flex: 1 1 auto; }
+  /* alerts: the action goes below the text, which keeps the full width */
+  .alert { grid-template-columns: 4px 1fr; }
+  .alert::before { grid-row: span 2; }
+  .alert > :last-child { grid-column: 2; justify-self: end; margin-top: 6px; }
   .group-foot-in { padding-left: 0; }
   .devices tr.group-foot, .devices tr.group-foot td { display: block; }
   .devices tbody tr.selected { background: color-mix(in srgb, var(--accent-soft) 70%, transparent); border-radius: 8px; }
@@ -326,6 +334,8 @@ dialog::backdrop { background: rgb(2 6 23 / 55%); backdrop-filter: blur(2px); }
 .sheet-body h3 { margin: 0 0 8px; font-size: .95rem; }
 @media (max-width: 640px) {
   .sheet { width: 100vw; max-width: 100vw; max-height: 100dvh; height: 100dvh; margin: 0; border-radius: 0; border: 0; }
+  .sheet-body { padding: 12px 12px 20px; }
+  .set-section { padding: 12px; }
 }
 
 .confirm { width: min(420px, calc(100vw - 32px)); }

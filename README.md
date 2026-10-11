@@ -259,7 +259,7 @@ Guardian reads environment variables at startup (set with
 | `GUARDIAN_LEARN_PERIOD` * | `7d` | learning period |
 | `GUARDIAN_RETENTION` * | `60d` | how long statistics are kept |
 | `GUARDIAN_DEDUP_WINDOW` * | `6h` | identical alerts are sent once per window |
-| `GUARDIAN_LANGUAGE` * | – (English) | alert/notification language: en, cs, de, pl, ru, es, pt (empty = English alerts, UI follows browser) |
+| `GUARDIAN_LANGUAGE` * | – (English) | notification language: en, cs, de, pl, ru, es, pt (empty = English; the UI, alerts included, has its own language switch) |
 | `GUARDIAN_TELEGRAM_TOKEN` / `GUARDIAN_TELEGRAM_CHAT` * | - | Telegram bot token and chat ID |
 | `GUARDIAN_NTFY_URL` / `GUARDIAN_NTFY_TOKEN` * | - | ntfy topic URL and optional token |
 | `TZ` | UTC | time zone, e.g. `Europe/Berlin` |

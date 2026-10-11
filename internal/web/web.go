@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Marteva/routeros-guardian/internal/detect"
 	"github.com/Marteva/routeros-guardian/internal/model"
 	"github.com/Marteva/routeros-guardian/internal/settings"
 )
@@ -341,6 +342,28 @@ func toAlertDTO(a model.Alert, names map[string]string) alertDTO {
 	}
 }
 
+// alertLang returns the ?lang= of an alert request when it is one of
+// settings.Languages, else "" (= keep the stored texts).
+func alertLang(r *http.Request) string {
+	if l := r.URL.Query().Get("lang"); slices.Contains(settings.Languages, l) {
+		return l
+	}
+	return ""
+}
+
+// localize replaces the stored title/detail (written in the notification
+// language when the alert was raised) with a rendering in lang from the
+// alert's evidence; d is the alert's device (nil = unknown). Alerts whose
+// evidence cannot be rendered (older versions) keep the stored texts.
+func localize(dto *alertDTO, a model.Alert, d *model.Device, lang string) {
+	if lang == "" {
+		return
+	}
+	if title, detail, ok := detect.RenderAlert(a, d, lang); ok {
+		dto.Title, dto.Detail = title, detail
+	}
+}
+
 // ---------------------------------------------------------------------------
 // handlers
 // ---------------------------------------------------------------------------
@@ -522,6 +545,8 @@ func (s *server) healthz(w http.ResponseWriter, r *http.Request) {
 	_, _ = io.WriteString(w, msg+"\n")
 }
 
+// device returns one device with its last 7 days of traffic, destinations
+// and alerts (?lang= as for alerts).
 func (s *server) device(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	d, ok := s.lookup(w, r)
@@ -563,11 +588,14 @@ func (s *server) device(w http.ResponseWriter, r *http.Request) {
 		res.Dests = append(res.Dests, destDTO{Country: x.Country, ASN: x.ASN, ASOrg: x.ASOrg, FirstSeen: x.FirstSeen, LastSeen: x.LastSeen, Bytes: x.Bytes})
 	}
 	names := map[string]string{d.MAC: deviceName(d)}
+	lang := alertLang(r)
 	for _, a := range as {
 		if !a.Acked {
 			res.Device.OpenAlerts++
 		}
-		res.Alerts = append(res.Alerts, toAlertDTO(a, names))
+		dto := toAlertDTO(a, names)
+		localize(&dto, a, &d, lang)
+		res.Alerts = append(res.Alerts, dto)
 	}
 	writeJSON(w, http.StatusOK, res)
 }
@@ -784,6 +812,8 @@ func (s *server) setQuarantine(w http.ResponseWriter, r *http.Request, q bool) {
 	writeJSON(w, http.StatusOK, toDeviceDTO(d))
 }
 
+// alerts lists alerts, newest first: ?open=1, ?mac=, ?limit= (max 1000),
+// ?since= (RFC 3339) and ?lang= (title/detail rendered in that UI language).
 func (s *server) alerts(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	f := model.AlertFilter{OnlyOpen: q.Get("open") == "1" || q.Get("open") == "true", Limit: 100}
@@ -817,14 +847,23 @@ func (s *server) alerts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	names := map[string]string{}
+	byMAC := map[string]model.Device{}
 	if devs, err := s.d.Store.Devices(r.Context()); err == nil {
 		for _, d := range devs {
 			names[d.MAC] = deviceName(d)
+			byMAC[d.MAC] = d
 		}
 	}
+	lang := alertLang(r)
 	out := make([]alertDTO, 0, len(as))
 	for _, a := range as {
-		out = append(out, toAlertDTO(a, names))
+		dto := toAlertDTO(a, names)
+		var dev *model.Device
+		if d, ok := byMAC[a.DeviceMAC]; ok {
+			dev = &d
+		}
+		localize(&dto, a, dev, lang)
+		out = append(out, dto)
 	}
 	writeJSON(w, http.StatusOK, out)
 }

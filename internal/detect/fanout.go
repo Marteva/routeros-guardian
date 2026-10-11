@@ -2,7 +2,6 @@ package detect
 
 import (
 	"math"
-	"strings"
 	"time"
 
 	"github.com/Marteva/routeros-guardian/internal/model"
@@ -52,26 +51,15 @@ func (e *Engine) fanoutAlert(st *devState, obs model.HourStat, hist []model.Hour
 	if prof.FanoutCritical {
 		sev = model.SevCritical
 	}
-	l := e.lang
-	det := []string{
-		l.t("alert.fanout.detail", hourRange(h), obs.DistinctDst, obs.NewConns,
-			l.baseline(b, l.t("unit.addr_per_hour", l.num(b.Median))), l.ratio(v.Ratio)),
-		l.t("alert.fanout.max", l.t("unit.addr_per_hour", l.num(b.Max))),
-		l.t("alert.fanout.explain"),
-	}
-	if sev == model.SevCritical {
-		det = append(det, l.t("alert.fanout.advice_crit"))
-	}
-	return model.Alert{
+	a := model.Alert{
 		Time:      h.Add(time.Hour),
 		DeviceMAC: st.dev.MAC,
 		Kind:      model.AlertDestFanout,
 		Severity:  sev,
-		Title:     l.t("alert.fanout.title", l.deviceName(st.dev), obs.DistinctDst),
-		Detail:    strings.Join(det, " "),
 		Evidence: map[string]any{
 			"hour":             h,
 			"device_kind":      st.dev.EffectiveKind(),
+			"device":           snapshotOf(st.dev),
 			"observed_dst":     obs.DistinctDst,
 			"new_conns":        obs.NewConns,
 			"baseline_median":  round2(b.Median),
@@ -85,5 +73,7 @@ func (e *Engine) fanoutAlert(st *devState, obs model.HourStat, hist []model.Hour
 			"hist_max_factor":  e.cfg.HistMaxFactor,
 		},
 		DedupKey: "dest_fanout:" + st.dev.MAC,
-	}, true
+	}
+	e.setText(&a, &st.dev)
+	return a, true
 }

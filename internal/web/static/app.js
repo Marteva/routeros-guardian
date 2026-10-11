@@ -135,6 +135,9 @@
     storage.set("guardian.lang", l);
     setLang(l);
     rerenderAll();
+    // alert titles/details are rendered by the server in the UI language
+    refresh();
+    loadDetail(false);
   }
 
   function rerenderAll() {
@@ -787,8 +790,10 @@
     // do not clobber the form while the user is editing it
     if (!force && (state.detailDirty || editingIn($("#detail-body")))) return;
     try {
-      const data = await api("GET", `devices/${encodeURIComponent(mac)}`);
+      const l = lang;
+      const data = await api("GET", `devices/${encodeURIComponent(mac)}?lang=${l}`);
       if (state.detailMac !== mac) return;
+      if (l !== lang) return loadDetail(force); // language switched meanwhile: alert texts are stale
       if (!force && (state.detailDirty || editingIn($("#detail-body")))) return;
       state.detailData = data;
       state.detailDirty = false;
@@ -1311,12 +1316,13 @@
   let refreshing = null;
   async function refresh() {
     if (refreshing) return refreshing;
+    const l = lang; // alert texts come in this language
     refreshing = (async () => {
-      const q = state.alertFilter === "open" ? "alerts?open=1&limit=500" : "alerts?limit=500";
+      const q = (state.alertFilter === "open" ? "alerts?open=1&limit=500" : "alerts?limit=500") + "&lang=" + l;
       const [st, devs, alerts] = await Promise.allSettled([api("GET", "status"), api("GET", "devices"), api("GET", q)]);
       if (st.status === "fulfilled") state.status = st.value;
       if (devs.status === "fulfilled") state.devices = devs.value || [];
-      if (alerts.status === "fulfilled") state.alerts = alerts.value || [];
+      if (alerts.status === "fulfilled" && l === lang) state.alerts = alerts.value || [];
       const failed = [st, devs, alerts].find((r) => r.status === "rejected");
       renderStatus();
       const banner = $("#error-banner");
@@ -1330,7 +1336,10 @@
         state.settings.learningUntil = state.status.learningUntil;
         updateLearnInfo();
       }
-    })().finally(() => { refreshing = null; });
+    })().finally(() => {
+      refreshing = null;
+      if (l !== lang) refresh(); // the language was switched while loading
+    });
     return refreshing;
   }
 

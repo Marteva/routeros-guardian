@@ -189,13 +189,45 @@ which `model.Store` does not expose; a `jaccard` helper is ready.
 ## Texts and languages
 
 All titles and details come from `internal/i18n` (`alerts_<lang>.go`, keys
-`alert.*`, `kind.*`, `word.*`, `unit.*`, `fmt.*`), rendered in
-`settings.Language` (en, cs, de, pl, ru, es, pt; default and fallback en).
-Numbers use the language's decimal separator ("3.1 GB/h" en, "3,1 GB/h"
-others), dates the language's layout, counted nouns the plural rules of
-cs/pl/ru (`word.<noun>.one|few|many`). Russian/Polish titles avoid past-tense
-verbs whose gender would have to agree with the device name. Evidence keys
-stay language independent (`kind_camera`, not a translated label).
+`alert.*`, `kind.*`, `word.*`, `unit.*`, `fmt.*`; languages en, cs, de, pl,
+ru, es, pt; fallback en). Numbers use the language's decimal separator
+("3.1 GB/h" en, "3,1 GB/h" others), dates the language's layout, counted
+nouns the plural rules of cs/pl/ru (`word.<noun>.one|few|many`).
+Russian/Polish titles avoid past-tense verbs whose gender would have to agree
+with the device name. Evidence keys stay language independent (`kind_camera`,
+not a translated label).
+
+**Rendered from Evidence** (`render.go`). `RenderAlert(a, device, lang)`
+rebuilds title and detail of every alert kind purely from `Kind`, `Severity`
+and `Evidence`. It is the single source of truth:
+
+* the detectors build the alert with its evidence and let the renderer write
+  `Title`/`Detail` in `settings.Language` – that text is stored and sent by
+  Telegram/ntfy;
+* the web UI (`GET /api/alerts?lang=…`, `GET /api/devices/{mac}?lang=…`)
+  renders stored alerts again in the viewer's UI language, so switching the
+  UI language also switches existing alerts.
+
+Evidence therefore holds every value a text uses, including `device` – a
+snapshot (`mac`, `note`, `comment`, `hostname`, `vendor`, effective `kind`)
+naming the device when it is no longer known – `baseline_days` (upload
+spike) and `inventory_hours`/`learning` (inventory summary). Stored evidence
+comes back from SQLite as JSON (numbers float64, times strings); the renderer
+always decodes through a JSON round trip into typed structs, so fresh and
+stored evidence render identically (tests: same text as the detector stored,
+in every language).
+
+The device is named by its **current** state when it is known (a note or kind
+set later shows up in old alerts); explanations that justify the decision
+("Camera: such devices do not usually upload this much") keep the kind
+stored in the evidence, i.e. the profile the alert was raised with.
+
+Alerts stored by v0.3.1 (no snapshot, no `baseline_days`, no
+`inventory_hours`/`learning`) still render exactly: the baseline window was
+always the default 28 days, the inventory hours and learning state follow from
+the stored learning start / inventory end and the alert time, and the device
+comes from the store. Without the device, or with evidence of older versions,
+`RenderAlert` returns ok=false and callers keep the stored text.
 
 ## Engine mechanics
 

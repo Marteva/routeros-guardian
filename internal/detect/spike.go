@@ -3,7 +3,6 @@ package detect
 import (
 	"context"
 	"math"
-	"strings"
 	"time"
 
 	"github.com/Marteva/routeros-guardian/internal/model"
@@ -66,31 +65,16 @@ func (e *Engine) spikeAlert(st *devState, obs model.HourStat, hist []model.HourS
 		return model.Alert{}, false
 	}
 	st.spikeAlertedHour = h
-	sev := spikeSeverity(prof)
-	l := e.lang
-	days := int(e.cfg.BaselineWindow.Hours() / 24)
-	det := []string{
-		l.t("alert.spike.detail", hourRange(h), l.bytes(v.Observed), l.baseline(b, l.perHour(b.Median)), l.ratio(v.Ratio)),
-		l.t("alert.spike.max", days, l.word("day", days), l.perHour(b.Max)),
-		spikeAdvice(l, st.dev.EffectiveKind(), sev),
-	}
-	return model.Alert{
+	a := model.Alert{
 		Time:      h.Add(time.Hour),
 		DeviceMAC: st.dev.MAC,
 		Kind:      model.AlertUploadSpike,
-		Severity:  sev,
-		Title:     l.t("alert.spike.title", l.deviceName(st.dev), l.perHour(v.Observed)),
-		Detail:    strings.Join(det, " "),
+		Severity:  spikeSeverity(prof),
 		Evidence:  spikeEvidence(st, prof, &e.cfg, v, h, "hourly"),
 		DedupKey:  "upload_spike:" + st.dev.MAC,
-	}, true
-}
-
-func spikeAdvice(l loc, kind string, sev model.Severity) string {
-	if sev == model.SevCritical {
-		return l.t("alert.spike.advice_crit", l.kind(kind))
 	}
-	return l.t("alert.spike.advice_warn")
+	e.setText(&a, &st.dev)
+	return a, true
 }
 
 func spikeEvidence(st *devState, p Profile, c *Config, v spikeVerdict, h time.Time, path string) map[string]any {
@@ -111,6 +95,8 @@ func spikeEvidence(st *devState, p Profile, c *Config, v spikeVerdict, h time.Ti
 		"min_ratio":        p.SpikeRatio,
 		"min_z":            p.SpikeMinZ,
 		"hist_max_factor":  c.HistMaxFactor,
+		"baseline_days":    int(c.BaselineWindow.Hours() / 24),
+		"device":           snapshotOf(st.dev),
 	}
 }
 
@@ -152,29 +138,22 @@ func (e *Engine) fastSpike(ctx context.Context, st *devState, t time.Time) (mode
 		return model.Alert{}, false
 	}
 	st.spikeAlertedHour = st.curHour
-	sev := spikeSeverity(prof)
 	mins := int(t.Sub(st.curHour).Minutes())
 	if mins < 1 {
 		mins = 1
-	}
-	l := e.lang
-	det := []string{
-		l.t("alert.spike.fast.detail", mins, l.bytes(obs),
-			l.baseline(b, l.t("unit.per_whole_hour", l.bytes(b.Median))), l.ratio(v.Ratio)),
-		spikeAdvice(l, st.dev.EffectiveKind(), sev),
 	}
 	ev := spikeEvidence(st, prof, c, v, st.curHour, "fast")
 	ev["fast_ratio"] = c.FastSpikeRatio
 	ev["fast_min_tx"] = c.FastSpikeMinTx
 	ev["minutes"] = mins
-	return model.Alert{
+	a := model.Alert{
 		Time:      t,
 		DeviceMAC: st.dev.MAC,
 		Kind:      model.AlertUploadSpike,
-		Severity:  sev,
-		Title:     l.t("alert.spike.fast.title", l.deviceName(st.dev), l.bytes(obs)),
-		Detail:    strings.Join(det, " "),
+		Severity:  spikeSeverity(prof),
 		Evidence:  ev,
 		DedupKey:  "upload_spike:" + st.dev.MAC,
-	}, true
+	}
+	e.setText(&a, &st.dev)
+	return a, true
 }

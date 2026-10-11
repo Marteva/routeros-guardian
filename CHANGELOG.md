@@ -9,6 +9,26 @@ release dates or tags.
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-11
+
+### Fixed
+
+- **Alert texts follow the UI language.** The web UI showed alert titles and
+  details in the notification language that was set when the alert was raised
+  (English by default), and the language switch in the header did not change
+  them. Alerts are now rendered in the UI language, including alerts stored
+  before the update (as long as their device is still known); Telegram/ntfy
+  messages keep using the language from Settings. `GET /api/alerts` and
+  `GET /api/devices/{mac}` accept `?lang=xx` for this. A device renamed or
+  re-typed later is shown under its current name in old alerts too.
+- **Mobile layout.** On phones the device search field stretched past the
+  screen edge (horizontal scrolling). The Devices header now wraps: the
+  Expand all / Merge buttons on one row and the search field on its own row
+  at full width, also with long translations and in merge mode. Alert cards
+  put the Acknowledge button below the text (which keeps the full width) and
+  wrap long device names, the merge bar stacks its buttons, and the device
+  and settings sheets use slightly smaller padding.
+
 ## [0.3.1] - 2026-10-09
 
 First public release.
