@@ -178,13 +178,18 @@ reboot. Details: [docs/routeros-setup.md](docs/routeros-setup.md#2-enable-contai
 
 **4. Create the container** - choose one:
 
-*A) Pull from GitHub Container Registry* (not yet verified on a router - if it
-fails, use B):
+*A) Pull from GitHub Container Registry* (recommended - verified on RouterOS
+7.24.4, updates are then just **Repull**):
 
 ```routeros
-/container config set registry-url=https://ghcr.io tmpdir=/usb1/guardian/tmp
-/container add name=guardian remote-image=marteva/routeros-guardian:latest interface=veth-guardian root-dir=/usb1/guardian/root envlists=guardian mountlists=guardian-data start-on-boot=yes logging=yes workdir=/
+/container config set tmpdir=/usb1/guardian/tmp
+/container add name=guardian remote-image=ghcr.io/marteva/routeros-guardian:latest interface=veth-guardian root-dir=/usb1/guardian/root envlists=guardian mountlists=guardian-data start-on-boot=yes logging=yes workdir=/
 ```
+
+The full `ghcr.io/...` name means the global `registry-url` stays untouched, so
+your Docker Hub containers keep working. An existing container created from a
+tarball can be switched over in Winbox: *Container* → **Repull** → *Remote
+Image* `ghcr.io/marteva/routeros-guardian:latest`.
 
 *B) Upload the release tarball* (verified): download
 `routeros-guardian-arm64.tar` (or `-arm` / `-amd64`) from the

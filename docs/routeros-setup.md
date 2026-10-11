@@ -318,19 +318,24 @@ RouterOS 7.20+ groups variables and mounts into named lists. **[verified]**
 
 ## 9. Create and start the container
 
-### Option A: pull from GitHub Container Registry  [unverified]
+### Option A: pull from GitHub Container Registry  [verified on 7.24.4]
 
 ```routeros
-/container config set registry-url=https://ghcr.io tmpdir=/usb1/guardian/tmp
-/container add name=guardian remote-image=marteva/routeros-guardian:latest interface=veth-guardian root-dir=/usb1/guardian/root envlists=guardian mountlists=guardian-data start-on-boot=yes logging=yes workdir=/
+/container config set tmpdir=/usb1/guardian/tmp
+/container add name=guardian remote-image=ghcr.io/marteva/routeros-guardian:latest interface=veth-guardian root-dir=/usb1/guardian/root envlists=guardian mountlists=guardian-data start-on-boot=yes logging=yes workdir=/
 ```
 
-- `registry-url` is a **global** setting - it also applies to pulls of your
-  other containers (switch it back to `https://registry-1.docker.io` for
-  Docker Hub images).
+- Use the **full** image name including `ghcr.io/`. The global `registry-url`
+  (usually Docker Hub) then stays as it is, so pulls of your other containers
+  are not affected.
 - `tmpdir` on the disk keeps the download off the small internal flash.
-- The image is multi-arch; RouterOS should pick the right architecture.
+- The image is multi-arch; RouterOS picks the right architecture (arm64
+  verified). The first pull downloads ~15 layers.
 - The router needs working DNS and internet access.
+- Updates: **Repull** (section 11).
+- Already running from a tarball? Switch without re-creating: Winbox →
+  *Container* → select `guardian` → **Repull** → *Remote Image*
+  `ghcr.io/marteva/routeros-guardian:latest` → **Repull** [verified].
 - If the pull fails, use option B - it does not depend on the registry.
 
 ### Option B: release tarball  [verified]
@@ -412,7 +417,7 @@ from section 9) also works and is needed when you switch between option A
 and option B.
 
 To pin a version with option A use a version tag instead of `latest`, e.g.
-`remote-image=marteva/routeros-guardian:0.3.1`.
+`remote-image=ghcr.io/marteva/routeros-guardian:0.3.2`.
 
 ## 12. Hardening checklist
 

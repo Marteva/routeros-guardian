@@ -99,10 +99,10 @@
 :global grdDisk "usb1"
 
 # Image source: "file" = tarball uploaded to the disk root (see grdImageFile),
-#               "remote" = pull from GitHub Container Registry (VERIFY, see section 6).
+#               "remote" = pull from GitHub Container Registry (see section 6).
 :global grdImageSource "file"
 :global grdImageFile "routeros-guardian-arm64.tar"
-:global grdRemoteImage "marteva/routeros-guardian:latest"
+:global grdRemoteImage "ghcr.io/marteva/routeros-guardian:latest"
 
 # Comment of the fasttrack rule the quarantine rules are placed before.
 # If no rule has this comment, they go to the top of the forward chain.
@@ -292,9 +292,9 @@
 #  grdImageSource = "file": upload routeros-guardian-<arch>.tar (GitHub
 #  release asset or scripts/build.*) to the root of the disk first.
 #
-#  grdImageSource = "remote" (VERIFY:): pulls from ghcr.io. This changes the
-#  GLOBAL registry-url (affects pulls of your other containers) and puts the
-#  download tmpdir on the disk. Needs working DNS and internet on the router.
+#  grdImageSource = "remote": pulls from ghcr.io (verified on 7.24.4). The full
+#  image name keeps the global registry-url untouched; only the download tmpdir
+#  is moved to the disk. Needs working DNS and internet on the router.
 #
 #  After the add, wait until /container print shows the container as stopped
 #  (extracting takes a few seconds to a minute), then start it.
@@ -312,7 +312,7 @@
     :if ($grdImageSource = "file") do={
         /container add name=$grdName file=("/" . $grdDisk . "/" . $grdImageFile) interface=$veth root-dir=($base . "/root") envlists=$grdName mountlists=($grdName . "-data") start-on-boot=yes logging=yes workdir=/
     } else={
-        /container config set registry-url=https://ghcr.io tmpdir=($base . "/tmp")
+        /container config set tmpdir=($base . "/tmp")
         /container add name=$grdName remote-image=$grdRemoteImage interface=$veth root-dir=($base . "/root") envlists=$grdName mountlists=($grdName . "-data") start-on-boot=yes logging=yes workdir=/
     }
     :put "Container created. When /container print shows it stopped, run:"

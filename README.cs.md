@@ -179,13 +179,18 @@ Podrobnosti: [docs/routeros-setup.md](docs/routeros-setup.md#2-enable-containers
 
 **4. Vytvoř kontejner** – vyber jednu možnost:
 
-*A) Stažení z GitHub Container Registry* (zatím neověřeno na routeru – pokud
-selže, použij B):
+*A) Stažení z GitHub Container Registry* (doporučeno – ověřeno na RouterOS
+7.24.4, aktualizace je pak jen **Repull**):
 
 ```routeros
-/container config set registry-url=https://ghcr.io tmpdir=/usb1/guardian/tmp
-/container add name=guardian remote-image=marteva/routeros-guardian:latest interface=veth-guardian root-dir=/usb1/guardian/root envlists=guardian mountlists=guardian-data start-on-boot=yes logging=yes workdir=/
+/container config set tmpdir=/usb1/guardian/tmp
+/container add name=guardian remote-image=ghcr.io/marteva/routeros-guardian:latest interface=veth-guardian root-dir=/usb1/guardian/root envlists=guardian mountlists=guardian-data start-on-boot=yes logging=yes workdir=/
 ```
+
+Díky plnému názvu `ghcr.io/...` se globální `registry-url` nemění, takže
+kontejnery z Docker Hubu fungují dál. Existující kontejner vytvořený z tarballu
+přepneš ve Winboxu: *Container* → **Repull** → *Remote Image*
+`ghcr.io/marteva/routeros-guardian:latest`.
 
 *B) Nahrání tarballu z release* (ověřeno): stáhni
 `routeros-guardian-arm64.tar` (nebo `-arm` / `-amd64`) z

@@ -9,6 +9,12 @@ release dates or tags.
 
 ## [Unreleased]
 
+### Documentation
+
+- Pulling from GHCR (`remote-image=ghcr.io/marteva/routeros-guardian:latest`),
+  updating with Repull and the image healthcheck are verified on RouterOS
+  7.24.4; the full image name no longer requires changing `registry-url`.
+
 ## [0.3.2] - 2026-10-11
 
 ### Fixed
